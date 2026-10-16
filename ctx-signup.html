@@ -1,0 +1,270 @@
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trade-Ex Create Account</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: same mobile column as the sign-in page. Themed hero (big logo + moving trail of the other platforms)
+   over a white sheet holding a 3-step sign-up: details, email code, welcome. Platform tokens via body[data-p]. */
+:root{
+  --display:'Barlow Condensed','Arial Narrow',sans-serif; --body:'Barlow',system-ui,Arial,sans-serif;
+  --sheet:#ffffff; --ink:#14181f; --muted:#5d6675; --line:#dde1e8; --field:#f5f6f8; --err:#c4251a; --ok:#14833b;
+  --hero:#c8102e; --hero-2:#7d0a1d; --accent:#c8102e; --on-accent:#fff; --tint:#fde9ec; --link:#c8102e;
+}
+body[data-p="cencan"]{--hero:#b30f29;--hero-2:#5e0714;--accent:#c8102e;--on-accent:#fff;--tint:#fde9ec;--link:#c8102e}
+body[data-p="cme"]{--hero:#14161b;--hero-2:#000;--accent:#f2a900;--on-accent:#1a1205;--tint:#fff3d0;--link:#8a6100}
+body[data-p="mlo"]{--hero:#0c4a8f;--hero-2:#06274d;--accent:#0c63c4;--on-accent:#fff;--tint:#e3effc;--link:#0c63c4}
+html,body{height:100%}
+body{margin:0;background:var(--hero-2);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent}
+*{box-sizing:border-box}
+button,input{font:inherit}
+.app{max-width:480px;min-height:100%;margin:0 auto;display:flex;flex-direction:column;background-image:linear-gradient(170deg,var(--hero) 0%,var(--hero-2) 100%)}
+.hero{color:#fff;padding:24px 20px 16px;display:flex;flex-direction:column;gap:14px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-60px;top:-50px;width:230px;height:230px;border-radius:50%;border:34px solid rgba(255,255,255,.07);pointer-events:none}
+.eyebrow{font-family:var(--display);font-weight:600;letter-spacing:2px;font-size:13px;text-transform:uppercase;opacity:.8}
+.logo{display:flex;flex-direction:column;gap:8px;min-height:84px;justify-content:center}
+.logo .mark{font-family:var(--display);font-weight:800;line-height:.9;display:flex;align-items:center;gap:10px}
+.logo .tag{font-family:var(--display);font-weight:600;letter-spacing:1.6px;font-size:14px;text-transform:uppercase;opacity:.85}
+.m-cencan .mark{font-size:56px;letter-spacing:1px}.m-cencan svg{width:36px;height:36px;flex:none}
+.m-cme .mark{font-size:68px;letter-spacing:3px}.m-cme .mark i{font-style:normal;color:var(--accent)}
+.m-mlo .mark{font-size:40px;flex-wrap:wrap;gap:0 10px}.m-mlo .mark b{color:#7cc0ff}
+.pitch{font-size:15px;font-weight:500;opacity:.92;max-width:34ch}
+.trail-label{font-family:var(--display);font-weight:600;letter-spacing:1.5px;font-size:12px;text-transform:uppercase;opacity:.7;display:flex;align-items:center;gap:8px}
+.trail-label::before{content:"";width:18px;height:2px;background:currentColor;opacity:.6}
+.trail{overflow:hidden;margin:0 -20px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.track{display:flex;gap:10px;width:max-content;animation:slide 18s linear infinite;padding:4px 0}
+.trail:hover .track,.trail:focus-within .track{animation-play-state:paused}
+@keyframes slide{to{transform:translateX(-50%)}}
+.chip{flex:none;display:flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.1);color:#fff;border-radius:999px;padding:5px 14px 5px 5px;cursor:pointer}
+.chip .n{font-weight:600;font-size:14px;white-space:nowrap}
+.ic{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:13px;flex:none}
+.ic.cencan{background:#c8102e;color:#fff}.ic.cme{background:#14161b;color:#f2a900;border:1.5px solid #f2a900}.ic.mlo{background:#fff;color:#0c4a8f;border:1.5px solid #0c4a8f}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.sheet{flex:1;background:var(--sheet);border-radius:26px 26px 0 0;padding:22px 20px calc(24px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;box-shadow:0 -10px 30px rgba(0,0,0,.18)}
+.dots{display:flex;gap:6px}
+.dots i{height:5px;flex:1;border-radius:3px;background:var(--line)}
+.dots i.on{background:var(--accent)}
+.sheet h1{font-family:var(--display);font-size:30px;font-weight:800;margin:0;line-height:1}
+.sub{margin:3px 0 0;color:var(--muted);font-size:15px}
+.step{display:none;flex-direction:column;gap:14px}.step.show{display:flex}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.seg button{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:10px 4px;font-weight:600;font-size:14px;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;gap:2px;align-items:center;line-height:1.2}
+.seg button small{font-weight:400;color:var(--muted);font-size:11.5px}
+.seg button[aria-pressed="true"]{border-color:var(--accent);background:var(--tint);box-shadow:0 0 0 3px var(--tint)}
+.fld{display:flex;flex-direction:column;gap:5px}
+.fld label{font-size:13px;font-weight:600;color:#3a4252}
+.inp{position:relative;display:flex;align-items:center}
+.inp input{width:100%;height:50px;border:1.5px solid var(--line);background:var(--field);border-radius:13px;padding:0 14px;font-size:16px;color:var(--ink)}
+.inp input:focus{border-color:var(--accent);background:#fff;outline:none;box-shadow:0 0 0 4px var(--tint)}
+.inp.bad input{border-color:var(--err)}
+.eye{position:absolute;right:6px;border:0;background:none;color:var(--muted);font-weight:600;font-size:13px;padding:10px;border-radius:9px;cursor:pointer}
+.msg{font-size:13px;color:var(--err)}
+.meter{display:flex;gap:4px}.meter i{flex:1;height:4px;border-radius:2px;background:var(--line)}
+.meter i.on{background:var(--ok)}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:#3a4252}
+.chk input{width:20px;height:20px;margin-top:1px;accent-color:var(--accent);flex:none}
+.go{height:54px;border:0;border-radius:14px;background:var(--accent);color:var(--on-accent);font-family:var(--display);font-weight:800;font-size:20px;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px}
+.go[disabled]{opacity:.7}
+.spin{width:18px;height:18px;border-radius:50%;border:3px solid currentColor;border-right-color:transparent;animation:rot .7s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.or{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:13px}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+.socs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.soc{height:50px;border-radius:13px;border:1.5px solid var(--line);background:#fff;color:var(--ink);display:flex;align-items:center;justify-content:center;gap:9px;font-weight:600;font-size:15px;cursor:pointer}
+.soc.apple{background:#000;border-color:#000;color:#fff}
+.soc svg{width:20px;height:20px}
+.lnk{border:0;background:none;color:var(--link);font-weight:700;padding:6px 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.foot{text-align:center;color:var(--muted);font-size:14px}
+.otp{display:flex;gap:8px;justify-content:center}
+.otp input{width:52px;height:60px;text-align:center;font-size:26px;font-weight:700;border:1.5px solid var(--line);border-radius:12px;background:var(--field)}
+.otp input:focus{border-color:var(--accent);background:#fff;outline:none;box-shadow:0 0 0 4px var(--tint)}
+.demo{background:#fff6dd;border:1px dashed #b87f00;border-radius:10px;padding:8px 11px;font-size:12.5px;color:#6b4c00}
+.tick{width:58px;height:58px;border-radius:50%;background:var(--tint);display:grid;place-items:center}
+.tick svg{width:30px;height:30px}
+.acc{display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);border-radius:14px;padding:10px 12px;background:#fff;width:100%;text-align:left}
+.acc .ic{width:38px;height:38px;font-size:14px}
+.acc b{display:block;font-size:15.5px}.acc small{color:var(--muted);font-size:13px}
+.why{align-self:flex-start;display:inline-flex;align-items:center;gap:7px;border:0;background:var(--tint);color:var(--ink);border-radius:999px;padding:7px 13px 7px 8px;font-weight:600;font-size:14px;cursor:pointer;margin-top:8px}
+.why span{width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-weight:800;font-size:13px}
+.scrim{position:fixed;inset:0;background:rgba(8,10,14,.6);z-index:50;display:none;align-items:flex-end;justify-content:center}
+.scrim.show{display:flex}
+.pop{background:#fff;width:100%;max-width:480px;max-height:90%;overflow:auto;border-radius:24px 24px 0 0;padding:22px 20px calc(22px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;animation:up .25s ease-out}
+@keyframes up{from{transform:translateY(30px);opacity:0}}
+.pop h2{font-family:var(--display);font-size:28px;font-weight:800;margin:0;line-height:1}
+.pop .x{align-self:flex-end;border:0;background:var(--field);width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;margin-bottom:-8px}
+.ben{display:flex;flex-direction:column;gap:12px;margin:0;padding:0;list-style:none}
+.ben li{display:flex;gap:12px;align-items:flex-start}
+.ben .bi{flex:none;width:36px;height:36px;border-radius:11px;background:var(--tint);display:grid;place-items:center}
+.ben .bi svg{width:20px;height:20px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+body[data-p="cme"] .ben .bi svg{stroke:#8a6100}
+.ben b{display:block;font-size:15.5px;line-height:1.25}.ben small{color:var(--muted);font-size:13.5px}
+.roleTag{font-family:var(--display);font-weight:700;letter-spacing:1.2px;text-transform:uppercase;font-size:12.5px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.pop{animation:none}}
+.legal{font-size:12px;color:var(--muted);text-align:center;margin-top:auto}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){.track{animation:none}}
+</style>
+
+<div class="app">
+  <section class="hero">
+    <div class="eyebrow">Canadian Trade-Ex</div>
+    <div class="logo" id="logo"></div>
+    <div class="pitch" id="pitch"></div>
+    <div>
+      <div class="trail-label">One account also opens</div>
+      <div class="trail"><div class="track" id="track"></div></div>
+    </div>
+  </section>
+
+  <main class="sheet">
+    <div class="dots" aria-hidden="true"><i class="on" id="d1"></i><i id="d2"></i><i id="d3"></i></div>
+
+    <!-- STEP 1 -->
+    <form class="step show" id="s1" novalidate>
+      <div><h1>Create your account</h1><p class="sub" id="sub"></p><button type="button" class="why" id="why"><span>?</span>Why create an account?</button></div>
+      <div class="fld">
+        <label id="iamL">I’m joining as</label>
+        <div class="seg" role="group" aria-labelledby="iamL" id="seg">
+          <button type="button" data-r="attendee" aria-pressed="true">Attendee<small>Visit the show</small></button>
+          <button type="button" data-r="exhibitor" aria-pressed="false">Exhibitor<small>Have a booth</small></button>
+          <button type="button" data-r="seeker" aria-pressed="false">Job seeker<small>Find work</small></button>
+        </div>
+      </div>
+      <div class="fld"><label for="name">Full name</label><div class="inp" id="nW"><input id="name" autocomplete="name" placeholder="Alex Tremblay"></div><div class="msg" id="nM"></div></div>
+      <div class="fld"><label for="email">Email</label><div class="inp" id="eW"><input id="email" type="email" inputmode="email" autocomplete="email" placeholder="you@company.com"></div><div class="msg" id="eM"></div></div>
+      <div class="fld" id="coF"><label for="co" id="coL">Company</label><div class="inp" id="cW"><input id="co" autocomplete="organization" placeholder="Company name"></div><div class="msg" id="cM"></div></div>
+      <div class="fld"><label for="pw">Password</label><div class="inp" id="pW"><input id="pw" type="password" autocomplete="new-password" placeholder="At least 8 characters"><button type="button" class="eye" id="eye" aria-label="Show password">Show</button></div>
+        <div class="meter" id="meter" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="msg" id="pM"></div></div>
+      <label class="chk"><input type="checkbox" id="terms"><span>I agree to the Terms and Privacy Policy. Canadian Trade-Ex never sells or shares my contact details.</span></label>
+      <div class="msg" id="tM"></div>
+      <button class="go" id="go" type="submit"><span id="goT">Create account</span></button>
+      <div class="or">or sign up with</div>
+      <div class="socs">
+        <button class="soc" id="goog" type="button"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>Google</button>
+        <button class="soc apple" id="appl" type="button"><svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M16.4 12.6c0-2.4 2-3.5 2.1-3.6-1.2-1.7-3-1.9-3.6-2-1.5-.2-3 .9-3.8.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.5 1.3-.1 1.8-.8 3.3-.8s2 .8 3.3.8c1.4 0 2.3-1.2 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9-.1 0-2.8-1.1-2.8-4.2zM13.9 5.2c.7-.9 1.2-2.1 1-3.3-1 .1-2.3.7-3 1.6-.7.8-1.2 2-1.1 3.2 1.2.1 2.4-.6 3.1-1.5z"/></svg>Apple</button>
+      </div>
+      <div class="foot">Already have an account? <a class="lnk" href="ctx-login.html" id="toLogin">Sign in</a></div>
+    </form>
+
+    <!-- STEP 2 -->
+    <div class="step" id="s2">
+      <div><h1>Check your email</h1><p class="sub">We sent a 5-digit code to <b id="toE"></b>. It expires in 10 minutes.</p></div>
+      <div class="otp" id="otp"><input maxlength="1" inputmode="numeric" aria-label="Digit 1" autocomplete="one-time-code"><input maxlength="1" inputmode="numeric" aria-label="Digit 2"><input maxlength="1" inputmode="numeric" aria-label="Digit 3"><input maxlength="1" inputmode="numeric" aria-label="Digit 4"><input maxlength="1" inputmode="numeric" aria-label="Digit 5"></div>
+      <div class="msg" id="oM" style="text-align:center"></div>
+      <div class="demo">Demo only: your code is <b id="demoC"></b>. The live site emails it and checks it on the server.</div>
+      <button class="go" id="verify" type="button">Verify email</button>
+      <div class="foot"><button class="lnk" id="resend" type="button">Send a new code</button> · <button class="lnk" id="back" type="button">Change email</button></div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step" id="s3">
+      <div class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+      <div><h1 id="wT"></h1><p class="sub" id="wS"></p></div>
+      <div id="acc" style="display:flex;flex-direction:column;gap:8px"></div>
+      <a class="go" href="ctx-home.html" style="text-decoration:none">Start exploring</a>
+    </div>
+
+    <div class="legal">Your details are used to run the show and are never sold.</div>
+  </main>
+</div>
+
+<div class="scrim" id="scrim">
+  <div class="pop" role="dialog" aria-modal="true" aria-labelledby="popT">
+    <button class="x" id="popX" type="button" aria-label="Close">✕</button>
+    <div><div class="roleTag" id="popRole"></div><h2 id="popT">What you get with a free account</h2></div>
+    <ul class="ben" id="ben"></ul>
+    <button class="go" id="popGo" type="button">Create my account</button>
+    <div class="foot">Free to join. Takes under a minute.</div>
+  </div>
+</div>
+
+<script>
+/* Demo only: the code is made in the browser. Live build: the server creates the account, emails the 5-digit code,
+   verifies it, handles Google/Apple, and makes one Trade-Ex identity valid on CEN-CAN, CME and Mining Life Online. */
+var P={
+ cencan:{name:"CEN-CAN Expo",short:"CC",tag:"Central Canada’s Resource Expo",pitch:"Free pre-registration, exhibitor search and your Sept 9–10 agenda.",sub:"Join CEN-CAN Expo in under a minute.",what:"Exhibitors, agenda, JackLeg and the gala"},
+ cme:{name:"Canadian Mining Expo",short:"CME",tag:"Where the world comes to explore",pitch:"Save exhibitors you want to see and get them by email with booth numbers.",sub:"Join the Canadian Mining Expo.",what:"Exhibitor finder, tickets and the Job Fair"},
+ mlo:{name:"Mining Life Online",short:"MLO",tag:"Mining connects people",pitch:"Suppliers, products and solutions, all year round.",sub:"Join Mining Life Online.",what:"Supplier directory, products and enquiries"}
+};
+var ORDER=["cencan","cme","mlo"], cur="cencan", role="attendee", code="", info=null;
+var $=function(s){return document.querySelector(s)};
+var leaf='<svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M12 1l2 4 3-1-1 6 4-2-1.5 4 2.5.5-5.5 5 .5 2.5L12 18.5 7.5 20l.5-2.5-5.5-5 2.5-.5L3.5 8l4 2-1-6 3 1z"/><path d="M11.2 18h1.6v4h-1.6z"/></svg>';
+function logo(k){var h=k==="cencan"?'<div class="mark">CEN'+leaf+'CAN</div>':k==="cme"?'<div class="mark">C<i>M</i>E</div>':'<div class="mark"><span>MINING LIFE</span><b>ONLINE</b></div>';return '<div class="m-'+k+'">'+h+'</div><div class="tag">'+P[k].tag+'</div>'}
+function badge(k){return '<span class="ic '+k+'">'+P[k].short+'</span>'}
+function setP(k){
+  cur=k;document.body.setAttribute('data-p',k);$('#logo').innerHTML=logo(k);$('#pitch').textContent=P[k].pitch;$('#sub').textContent=P[k].sub;
+  var one=ORDER.filter(function(x){return x!==k}).map(function(x){return '<button class="chip" type="button" data-k="'+x+'" aria-label="Switch to '+P[x].name+'">'+badge(x)+'<span class="n">'+P[x].name+'</span></button>'}).join('');
+  var set=one+one+one;$('#track').innerHTML=set+set;
+  $('#toLogin').href='ctx-login.html#'+k;
+  try{localStorage.setItem('ctx_last',k)}catch(e){}
+}
+$('#track').onclick=function(e){var c=e.target.closest('.chip');if(c)setP(c.dataset.k)};
+function go(n){['s1','s2','s3'].forEach(function(id,i){$('#'+id).classList.toggle('show',i===n-1)});['d1','d2','d3'].forEach(function(id,i){$('#'+id).classList.toggle('on',i<n)});window.scrollTo(0,0)}
+
+var I={star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',cal:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',key:'<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3"/>',bell:'<path d="M6 17V11a6 6 0 0 1 12 0v6l2 2H4zM10 21h4"/>',chart:'<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>',brief:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V4h6v3M3 13h18"/>',chat:'<path d="M4 5h16v11H9l-5 4z"/>',tag:'<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.2"/>'};
+var BEN={
+ attendee:[["star","Save the exhibitors you want to see","Build your list from the finder and keep it for show day."],["mail","Get your list by email","Booth numbers included, ready to open on your phone."],["cal","Plan your two days","Pick sessions, demos and the gala so nothing overlaps."],["bell","Hear about changes first","Schedule updates and exhibitor news for the show you joined."],["key","One account, three sites","The same sign-in works on CEN-CAN, CME and Mining Life Online."]],
+ exhibitor:[["brief","Keep your company profile current","It’s what attendees are matched against when they search."],["chart","See who saved your booth","Know which attendees are interested before the doors open."],["chat","Reply to attendees who ask for you","Messages come to one inbox instead of scattered emails."],["tag","Reuse your details every year","Contacts, products and jobs carry over to the next show."],["key","One account, three sites","Manage CEN-CAN, CME and Mining Life Online together."]],
+ seeker:[["brief","Find who is hiring","See companies at the Job Fair and the roles they’re filling."],["star","Save employers and roles","Keep a short list to visit on the day."],["mail","Get your list by email","Booth numbers and job titles in one message."],["bell","Hear about new openings","Alerts when companies you saved post work."],["key","One account, three sites","Your profile also works on Mining Life Online all year."]]};
+function paintBen(){
+  var names={attendee:"For attendees",exhibitor:"For exhibitors",seeker:"For job seekers"};
+  $('#popRole').textContent=names[role];
+  $('#ben').innerHTML=BEN[role].map(function(x){return '<li><span class="bi"><svg viewBox="0 0 24 24" aria-hidden="true">'+I[x[0]]+'</svg></span><span><b>'+x[1]+'</b><small>'+x[2]+'</small></span></li>'}).join('');
+}
+var lastFocus=null;
+function openPop(){lastFocus=document.activeElement;paintBen();$('#scrim').classList.add('show');$('#popX').focus()}
+function closePop(){$('#scrim').classList.remove('show');if(lastFocus)lastFocus.focus()}
+$('#why').onclick=openPop;$('#popX').onclick=closePop;
+$('#popGo').onclick=function(){closePop();$('#name').focus()};
+$('#scrim').onclick=function(e){if(e.target.id==='scrim')closePop()};
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closePop()});
+
+$('#seg').onclick=function(e){var b=e.target.closest('button');if(!b)return;role=b.dataset.r;
+  this.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',x===b)});
+  $('#coF').hidden=role==="seeker";$('#coL').textContent=role==="exhibitor"?"Company exhibiting":"Company";};
+$('#eye').onclick=function(){var p=$('#pw'),s=p.type==="password";p.type=s?"text":"password";this.textContent=s?"Hide":"Show";this.setAttribute('aria-label',s?'Hide password':'Show password')};
+$('#pw').addEventListener('input',function(){var v=this.value,n=0;if(v.length>=8)n++;if(/[A-Z]/.test(v)&&/[a-z]/.test(v))n++;if(/\d/.test(v))n++;if(/[^A-Za-z0-9]/.test(v)||v.length>=12)n++;
+  document.querySelectorAll('#meter i').forEach(function(i,x){i.classList.toggle('on',x<n)})});
+function err(f,m){$('#'+f+'M').textContent=m;var w=$('#'+f+'W');if(w)w.classList.add('bad')}
+function clr(){['n','e','c','p','t'].forEach(function(f){$('#'+f+'M').textContent='';var w=$('#'+f+'W');if(w)w.classList.remove('bad')})}
+function busy(on){var g=$('#go');g.disabled=on;$('#goT').textContent=on?"Sending code":"Create account";var s=g.querySelector('.spin');if(on&&!s)g.insertAdjacentHTML('afterbegin','<span class="spin"></span>');if(!on&&s)s.remove()}
+function newCode(){code=String(Math.floor(10000+Math.random()*90000));$('#demoC').textContent=code;$('#oM').textContent='';document.querySelectorAll('#otp input').forEach(function(b){b.value=''});}
+$('#s1').addEventListener('submit',function(e){
+  e.preventDefault();clr();var ok=true;
+  var d={name:$('#name').value.trim(),email:$('#email').value.trim(),co:$('#co').value.trim(),pw:$('#pw').value};
+  if(d.name.length<2){err('n','Enter your full name.');ok=false}
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)){err('e','Enter a valid email, like you@company.com.');ok=false}
+  if(role!=="seeker"&&!d.co){err('c',role==="exhibitor"?'Enter the company you exhibit for.':'Enter your company.');ok=false}
+  if(d.pw.length<8){err('p','Use at least 8 characters.');ok=false}
+  if(!$('#terms').checked){$('#tM').textContent='Tick the box to agree before continuing.';ok=false}
+  if(!ok){var f=document.querySelector('.bad input');if(f)f.focus();return}
+  info=d;busy(true);
+  setTimeout(function(){busy(false);$('#toE').textContent=d.email;newCode();go(2);document.querySelector('#otp input').focus()},800);
+});
+var boxes=[].slice.call(document.querySelectorAll('#otp input'));
+boxes.forEach(function(b,i){
+  b.addEventListener('input',function(){b.value=b.value.replace(/\D/g,'').slice(-1);if(b.value&&boxes[i+1])boxes[i+1].focus()});
+  b.addEventListener('keydown',function(e){if(e.key==='Backspace'&&!b.value&&boxes[i-1])boxes[i-1].focus()});
+  b.addEventListener('paste',function(e){var t=(e.clipboardData.getData('text')||'').replace(/\D/g,'').slice(0,5);if(!t)return;e.preventDefault();boxes.forEach(function(x,j){x.value=t[j]||''});(boxes[Math.min(t.length,4)]).focus()});
+});
+$('#verify').onclick=function(){
+  var v=boxes.map(function(b){return b.value}).join('');
+  if(v.length<5){$('#oM').textContent='Enter all 5 digits.';return}
+  if(v!==code){$('#oM').textContent='That code doesn’t match. Check your email and try again.';return}
+  done(info.name,info.email);
+};
+$('#resend').onclick=function(){newCode();$('#oM').style.color='var(--ok)';$('#oM').textContent='New code sent.';setTimeout(function(){$('#oM').style.color='';$('#oM').textContent=''},2500)};
+$('#back').onclick=function(){go(1)};
+function done(name,email){
+  var first=(name||'').split(' ')[0];
+  $('#wT').textContent="Welcome"+(first?", "+first:"");
+  $('#wS').textContent="Your Trade-Ex account for "+email+" is ready. It works on all three sites.";
+  $('#acc').innerHTML=ORDER.map(function(k){return '<div class="acc">'+badge(k)+'<span><b>'+P[k].name+'</b><small>'+P[k].what+'</small></span></div>'}).join('');
+  go(3);
+}
+function prov(name){return function(){var b=this,t=b.innerHTML;b.disabled=true;b.innerHTML='<span class="spin"></span>Connecting';
+  setTimeout(function(){b.disabled=false;b.innerHTML=t;done(name+' user',name.toLowerCase()+'.user@example.com')},1000)}}
+$('#goog').onclick=prov('Google');$('#appl').onclick=prov('Apple');
+
+(function(){var k=(location.hash||'').replace('#','');if(!P[k]){try{k=localStorage.getItem('ctx_last')}catch(e){k=null}}setP(P[k]?k:"cencan")})();
+</script>

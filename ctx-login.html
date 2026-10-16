@@ -1,0 +1,239 @@
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trade-Ex Sign In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: one mobile column. Themed hero (big logo + moving trail of the other platforms) over a white form sheet.
+   Each platform sets its own tokens via body[data-p]; the page commits to those looks, so no dark-mode blocks. */
+:root{
+  --display:'Barlow Condensed','Arial Narrow',sans-serif; --body:'Barlow',system-ui,Arial,sans-serif;
+  --sheet:#ffffff; --ink:#14181f; --muted:#5d6675; --line:#dde1e8; --field:#f5f6f8; --err:#c4251a; --ok:#14833b;
+  --hero:#c8102e; --hero-2:#7d0a1d; --on-hero:#ffffff; --accent:#c8102e; --on-accent:#ffffff; --tint:#fde9ec;
+}
+body[data-p="cencan"]{--hero:#b30f29;--hero-2:#5e0714;--accent:#c8102e;--on-accent:#fff;--tint:#fde9ec}
+body[data-p="cme"]{--hero:#14161b;--hero-2:#000;--accent:#f2a900;--on-accent:#1a1205;--tint:#fff3d0}
+body[data-p="mlo"]{--hero:#0c4a8f;--hero-2:#06274d;--accent:#0c63c4;--on-accent:#fff;--tint:#e3effc}
+html,body{height:100%}
+body{margin:0;background:var(--hero-2);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent}
+*{box-sizing:border-box}
+button,input{font:inherit}
+.app{max-width:480px;min-height:100%;margin:0 auto;display:flex;flex-direction:column;background:var(--hero);background-image:linear-gradient(170deg,var(--hero) 0%,var(--hero-2) 100%);transition:background .4s}
+
+/* hero */
+.hero{color:var(--on-hero);padding:28px 20px 18px;display:flex;flex-direction:column;gap:16px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-60px;top:-50px;width:230px;height:230px;border-radius:50%;border:34px solid rgba(255,255,255,.07);pointer-events:none}
+.eyebrow{font-family:var(--display);font-weight:600;letter-spacing:2px;font-size:13px;text-transform:uppercase;opacity:.8}
+.logo{display:flex;flex-direction:column;gap:8px;min-height:92px;justify-content:center}
+.logo .mark{font-family:var(--display);font-weight:800;line-height:.9;display:flex;align-items:center;gap:10px}
+.logo .tag{font-family:var(--display);font-weight:600;letter-spacing:1.6px;font-size:14px;text-transform:uppercase;opacity:.85}
+.m-cencan .mark{font-size:62px;letter-spacing:1px}
+.m-cencan svg{width:40px;height:40px;flex:none}
+.m-cme .mark{font-size:76px;letter-spacing:3px}
+.m-cme .mark i{font-style:normal;color:var(--accent)}
+.m-mlo .mark{font-size:44px;letter-spacing:.5px;flex-wrap:wrap;gap:0 10px}
+.m-mlo .mark b{color:#7cc0ff;font-weight:800}
+.when{font-size:14.5px;font-weight:500;opacity:.9}
+
+/* trail of other platforms */
+.trail-label{font-family:var(--display);font-weight:600;letter-spacing:1.5px;font-size:12px;text-transform:uppercase;opacity:.7;display:flex;align-items:center;gap:8px}
+.trail-label::before{content:"";width:18px;height:2px;background:currentColor;opacity:.6}
+.trail{overflow:hidden;margin:0 -20px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.track{display:flex;gap:10px;width:max-content;animation:slide 18s linear infinite;padding:4px 0}
+.trail:hover .track,.trail:focus-within .track{animation-play-state:paused}
+@keyframes slide{to{transform:translateX(-50%)}}
+.chip{flex:none;display:flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.1);color:#fff;border-radius:999px;padding:5px 14px 5px 5px;cursor:pointer}
+.chip:focus-visible,.go:focus-visible,.soc:focus-visible,.lnk:focus-visible,.eye:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.chip .ic{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:13px;letter-spacing:.3px}
+.chip span.n{font-weight:600;font-size:14px;white-space:nowrap}
+.ic.cencan{background:#c8102e;color:#fff}.ic.cme{background:#14161b;color:#f2a900;border:1.5px solid #f2a900}.ic.mlo{background:#fff;color:#0c4a8f}
+
+/* sheet */
+.sheet{flex:1;background:var(--sheet);border-radius:26px 26px 0 0;padding:24px 20px calc(24px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;box-shadow:0 -10px 30px rgba(0,0,0,.18)}
+.sheet h1{font-family:var(--display);font-size:30px;font-weight:800;margin:0;line-height:1}
+.sheet p.sub{margin:2px 0 0;color:var(--muted);font-size:15px}
+.fld{display:flex;flex-direction:column;gap:5px}
+.fld label{font-size:13px;font-weight:600;color:#3a4252}
+.inp{position:relative;display:flex;align-items:center}
+.inp input{width:100%;height:52px;border:1.5px solid var(--line);background:var(--field);border-radius:13px;padding:0 14px;font-size:16px;color:var(--ink)}
+.inp input:focus{border-color:var(--accent);background:#fff;outline:none;box-shadow:0 0 0 4px var(--tint)}
+.inp.bad input{border-color:var(--err)}
+.eye{position:absolute;right:6px;border:0;background:none;color:var(--muted);font-weight:600;font-size:13px;padding:10px;border-radius:9px}
+.msg{font-size:13px;color:var(--err);min-height:0}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px}
+.row label{display:flex;gap:8px;align-items:center;color:#3a4252}
+.row input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
+.lnk{border:0;background:none;color:var(--accent);font-weight:700;padding:6px 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+body[data-p="cme"] .lnk{color:#8a6100}
+.go{height:54px;border:0;border-radius:14px;background:var(--accent);color:var(--on-accent);font-family:var(--display);font-weight:800;font-size:20px;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px}
+.go[disabled]{opacity:.7}
+.spin{width:18px;height:18px;border-radius:50%;border:3px solid currentColor;border-right-color:transparent;animation:rot .7s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.or{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:13px}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+.socs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.soc{height:50px;border-radius:13px;border:1.5px solid var(--line);background:#fff;color:var(--ink);display:flex;align-items:center;justify-content:center;gap:9px;font-weight:600;font-size:15px;cursor:pointer}
+.soc.apple{background:#000;border-color:#000;color:#fff}
+.soc svg{width:20px;height:20px}
+.foot{text-align:center;color:var(--muted);font-size:14px}
+.sso{display:flex;align-items:center;gap:8px;background:var(--tint);border-radius:11px;padding:9px 12px;font-size:13.5px;color:#2d3442}
+.sso b{font-weight:700}
+.legal{font-size:12px;color:var(--muted);text-align:center;margin-top:auto}
+
+/* done view */
+.done{display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.tick{width:58px;height:58px;border-radius:50%;background:var(--tint);display:grid;place-items:center}
+.tick svg{width:30px;height:30px}
+.access{display:flex;flex-direction:column;gap:8px;width:100%}
+.acc{display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);border-radius:14px;padding:10px 12px;background:#fff;text-align:left;cursor:pointer;width:100%}
+.acc .ic{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:14px}
+.acc b{display:block;font-size:15.5px}.acc small{color:var(--muted);font-size:13px}
+.acc.now{border-color:var(--accent);background:var(--tint)}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){.track{animation:none}.app{transition:none}}
+</style>
+
+<div class="app" id="app">
+  <section class="hero">
+    <div class="eyebrow">Canadian Trade-Ex</div>
+    <div class="logo" id="logo" aria-live="polite"></div>
+    <div class="when" id="when"></div>
+    <div>
+      <div class="trail-label">Your account also opens</div>
+      <div class="trail" id="trail"><div class="track" id="track"></div></div>
+    </div>
+  </section>
+
+  <main class="sheet">
+    <div id="viewLogin">
+      <form id="form" novalidate style="display:flex;flex-direction:column;gap:14px">
+        <div>
+          <h1 id="h1">Sign in</h1>
+          <p class="sub" id="sub"></p>
+        </div>
+        <div class="fld">
+          <label for="email">Email</label>
+          <div class="inp" id="eWrap"><input id="email" type="email" inputmode="email" autocomplete="email" placeholder="you@company.com"></div>
+          <div class="msg" id="eMsg" role="alert"></div>
+        </div>
+        <div class="fld" id="pFld">
+          <label for="pw">Password</label>
+          <div class="inp" id="pWrap"><input id="pw" type="password" autocomplete="current-password" placeholder="Your password"><button type="button" class="eye" id="eye" aria-label="Show password">Show</button></div>
+          <div class="msg" id="pMsg" role="alert"></div>
+        </div>
+        <div class="row">
+          <label><input type="checkbox" id="rem" checked> Keep me signed in</label>
+          <button type="button" class="lnk" id="forgot">Forgot password?</button>
+        </div>
+        <button class="go" id="go" type="submit"><span id="goTxt">Sign in</span></button>
+      </form>
+      <div class="or" style="margin:14px 0">or continue with</div>
+      <div class="socs">
+        <button class="soc" id="goog" type="button"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>Google</button>
+        <button class="soc apple" id="appl" type="button"><svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M16.4 12.6c0-2.4 2-3.5 2.1-3.6-1.2-1.7-3-1.9-3.6-2-1.5-.2-3 .9-3.8.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.5 1.3-.1 1.8-.8 3.3-.8s2 .8 3.3.8c1.4 0 2.3-1.2 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9-.1 0-2.8-1.1-2.8-4.2zM13.9 5.2c.7-.9 1.2-2.1 1-3.3-1 .1-2.3.7-3 1.6-.7.8-1.2 2-1.1 3.2 1.2.1 2.4-.6 3.1-1.5z"/></svg>Apple</button>
+      </div>
+      <div class="foot" style="margin-top:14px"><span id="newTxt">New here?</span> <button class="lnk" id="create" type="button">Create an account</button></div>
+    </div>
+
+    <div id="viewDone" class="done" hidden>
+      <div class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+      <div>
+        <h1 id="dTitle"></h1>
+        <p class="sub" id="dSub"></p>
+      </div>
+      <div class="sso"><span>One Trade-Ex account.</span><b>Same email works on all three.</b></div>
+      <div class="access" id="access"></div>
+      <button class="lnk" id="out" type="button">Sign out</button>
+    </div>
+
+    <div class="legal">By continuing you agree to the Terms and Privacy Policy. We never sell or share your contact details.</div>
+  </main>
+</div>
+
+<script>
+/* Demo auth: any valid email + a password of 8+ characters signs in. Google/Apple simulate a provider round trip.
+   Live build: sessions, OAuth (Google, Sign in with Apple), password reset and cross-platform SSO are server-side. */
+var P={
+  cencan:{name:"CEN-CAN Expo",short:"CC",when:"Sept 9–10, 2026 · Thunder Bay",tag:"Central Canada’s Resource Expo",sub:"Sign in to your CEN-CAN attendee or exhibitor account.",what:"Your exhibitor list, agenda and saved booths"},
+  cme:{name:"Canadian Mining Expo",short:"CME",when:"June 9–10, 2027 · Timmins",tag:"Where the world comes to explore",sub:"Sign in to manage your Canadian Mining Expo visit.",what:"Your saved exhibitors, tickets and job fair"},
+  mlo:{name:"Mining Life Online",short:"MLO",when:"Suppliers · Products · Solutions, all year round",tag:"Mining connects people",sub:"Sign in to your Mining Life Online profile.",what:"Your supplier directory, products and enquiries"}
+};
+var ORDER=["cencan","cme","mlo"], cur="cencan", mode="signin", user=null;
+var $=function(s){return document.querySelector(s)};
+var leaf='<svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M12 1l2 4 3-1-1 6 4-2-1.5 4 2.5.5-5.5 5 .5 2.5L12 18.5 7.5 20l.5-2.5-5.5-5 2.5-.5L3.5 8l4 2-1-6 3 1z"/><path d="M11.2 18h1.6v4h-1.6z"/></svg>';
+function logo(k){
+  var t=P[k].tag, h;
+  if(k==="cencan") h='<div class="mark">CEN'+leaf+'CAN</div>';
+  else if(k==="cme") h='<div class="mark">C<i>M</i>E</div>';
+  else h='<div class="mark"><span>MINING LIFE</span><b>ONLINE</b></div>';
+  return '<div class="m-'+k+'">'+h+'</div><div class="tag">'+t+'</div>';
+}
+function badge(k){return '<span class="ic '+k+'">'+P[k].short+'</span>'}
+function paintTrail(){
+  var others=ORDER.filter(function(k){return k!==cur});
+  var one=others.map(function(k){return '<button class="chip" data-k="'+k+'" type="button" aria-label="Switch to '+P[k].name+'">'+badge(k)+'<span class="n">'+P[k].name+'</span></button>'}).join('');
+  var set=one+one+one; /* enough per half to overflow, doubled below for a seamless loop */
+  $('#track').innerHTML=set+set;
+}
+function setP(k){
+  cur=k; document.body.setAttribute('data-p',k);
+  $('#logo').innerHTML=logo(k); $('#when').textContent=P[k].when;
+  paintTrail(); paintMode(); clearErr();
+  try{localStorage.setItem('ctx_last',k)}catch(e){}
+  if(user) paintDone();
+}
+function paintMode(){
+  var s=mode==="signin";
+  $('#h1').textContent=s?"Sign in":"Create your account";
+  $('#sub').textContent=s?P[cur].sub:"One account for CEN-CAN, Canadian Mining Expo and Mining Life Online.";
+  $('#goTxt').textContent=s?"Sign in":"Create account";
+  $('#pw').autocomplete=s?"current-password":"new-password";
+  $('#pw').placeholder=s?"Your password":"At least 8 characters";
+  $('#newTxt').textContent=s?"New here?":"Already have an account?";
+  $('#create').textContent=s?"Create an account":"Sign in";
+  $('.row').style.display=s?"flex":"none";
+}
+function clearErr(){['e','p'].forEach(function(x){$('#'+x+'Msg').textContent='';$('#'+x+'Wrap').classList.remove('bad')})}
+function bad(x,m){$('#'+x+'Msg').textContent=m;$('#'+x+'Wrap').classList.add('bad')}
+function busy(on,txt){var g=$('#go');g.disabled=on;$('#goTxt').textContent=on?txt:(mode==="signin"?"Sign in":"Create account");var s=g.querySelector('.spin');if(on&&!s){g.insertAdjacentHTML('afterbegin','<span class="spin"></span>')}if(!on&&s)s.remove()}
+function paintDone(){
+  $('#dTitle').textContent="You’re in"+(user.name?", "+user.name:"");
+  $('#dSub').textContent="Signed in to "+P[cur].name+" as "+user.email+".";
+  $('#access').innerHTML=ORDER.map(function(k){return '<button class="acc'+(k===cur?' now':'')+'" data-k="'+k+'" type="button">'+badge(k).replace('class="ic','class="ic')+'<span><b>'+P[k].name+(k===cur?' · you are here':'')+'</b><small>'+P[k].what+'</small></span></button>'}).join('');
+}
+function showDone(){$('#viewLogin').hidden=true;$('#viewDone').hidden=false;paintDone()}
+function signedIn(email,name){
+  user={email:email,name:name||""}; busy(false); showDone();
+}
+$('#form').addEventListener('submit',function(e){
+  e.preventDefault(); clearErr();
+  var em=$('#email').value.trim(), pw=$('#pw').value, ok=true;
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){bad('e','Enter a valid email, like you@company.com.');ok=false}
+  if(pw.length<8){bad('p',mode==="signin"?'Enter your password (8 or more characters).':'Use at least 8 characters.');ok=false}
+  if(!ok) return;
+  busy(true,mode==="signin"?"Signing in":"Creating account");
+  setTimeout(function(){signedIn(em,em.split('@')[0].split(/[._]/)[0].replace(/^./,function(c){return c.toUpperCase()}))},900);
+});
+$('#eye').onclick=function(){var p=$('#pw'),s=p.type==="password";p.type=s?"text":"password";this.textContent=s?"Hide":"Show";this.setAttribute('aria-label',s?'Hide password':'Show password')};
+$('#forgot').onclick=function(){
+  clearErr(); var em=$('#email').value.trim();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){bad('e','Enter your email first, then tap Forgot password.');$('#email').focus();return}
+  $('#pMsg').style.color='var(--ok)';$('#pMsg').textContent='Demo: a reset link would be emailed to '+em+'.';
+  setTimeout(function(){$('#pMsg').style.color=''},3500);
+};
+$('#create').onclick=function(){mode=mode==="signin"?"signup":"signin";paintMode();clearErr()};
+function provider(name){return function(){
+  var b=this; b.disabled=true; var t=b.innerHTML; b.innerHTML='<span class="spin" style="border-color:currentColor;border-right-color:transparent"></span>Connecting';
+  setTimeout(function(){b.disabled=false;b.innerHTML=t;signedIn(name.toLowerCase()+'.user@example.com',name+' user')},1000);
+}}
+$('#goog').onclick=provider('Google'); $('#appl').onclick=provider('Apple');
+$('#track').onclick=function(e){var c=e.target.closest('.chip');if(c)setP(c.dataset.k)};
+$('#access').onclick=function(e){var c=e.target.closest('.acc');if(c)setP(c.dataset.k)};
+$('#out').onclick=function(){user=null;$('#viewDone').hidden=true;$('#viewLogin').hidden=false;$('#pw').value='';mode="signin";paintMode()};
+
+/* Real use: the link a user follows sets the platform, e.g. login?site=cme. Demo: URL hash or last choice. */
+(function(){
+  var k=(location.hash||'').replace('#','');
+  if(!P[k]){try{k=localStorage.getItem('ctx_last')}catch(e){k=null}}
+  setP(P[k]?k:"cencan");
+})();
+</script>
