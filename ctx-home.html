@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Canadian Trade-Ex — Mining Events Home (mockup)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#0f1115; --gold:#f2a900; --gold-d:#b87f00; --red:#d62b20; --paper:#fff; --soft:#f5f6f8;
+    --line:#e3e6eb; --muted:#667085; --text:#1a1d23; --ok:#16a34a;
+    --ev:#f2a900; --ev-ink:#1a1205; --ev-soft:#fff6dd;   /* swapped per event */
+  }
+  body[data-ev="cencan"]{ --ev:#c8102e; --ev-ink:#fff; --ev-soft:#fde9ec; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Barlow',system-ui,Arial,sans-serif;color:var(--text);background:var(--paper);font-size:16px;line-height:1.45;padding-bottom:calc(64px + env(safe-area-inset-bottom))}
+  .cond{font-family:'Barlow Condensed','Barlow',sans-serif}
+  button{font-family:inherit;cursor:pointer}
+  a{color:inherit;text-decoration:none}
+  .wrap{padding:0 16px;max-width:1120px;margin:0 auto}
+
+  /* ---- header ---- */
+  header{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid var(--line)}
+  .hbar{display:flex;align-items:center;gap:10px;height:56px}
+  .brand{display:flex;flex-direction:column;line-height:.9}
+  .brand b{font-family:'Barlow Condensed';font-weight:800;font-size:22px;letter-spacing:.4px}
+  .brand small{font-size:10px;letter-spacing:2px;color:var(--muted);font-weight:600}
+  .hbar .sp{flex:1}
+  .signin{border:1.5px solid var(--ink);background:#fff;border-radius:999px;padding:7px 14px;font-weight:700;font-size:14px;display:flex;align-items:center;gap:7px}
+  .signin .av{width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--gold);display:none;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+  .signin.on .av{display:flex}
+  .dnav{display:none;gap:22px;font-weight:600;font-size:15px;color:#394150}
+  .dnav a:hover{color:var(--ev)}
+
+  /* ---- event switch ---- */
+  .evsw{display:flex;gap:6px;padding:8px 0 10px}
+  .evsw button{flex:1;border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:8px 10px;text-align:left;display:flex;flex-direction:column;line-height:1.15}
+  .evsw button b{font-family:'Barlow Condensed';font-size:18px;font-weight:800;letter-spacing:.3px}
+  .evsw button span{font-size:12px;color:var(--muted);font-weight:500}
+  .evsw button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:#fff}
+  .evsw button[aria-pressed="true"] span{color:#c9ced6}
+  .evsw button[aria-pressed="true"] b::before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--ev);margin-right:7px}
+
+  /* ---- hero ---- */
+  .hero{position:relative;color:#fff;background:#12151b center/cover;overflow:hidden}
+  .hero::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,12,16,.7) 0%,rgba(10,12,16,.9) 100%)}
+  .hero .wrap{position:relative;padding-top:46px;padding-bottom:26px}
+  .badge{display:inline-block;background:var(--ev);color:var(--ev-ink);font-weight:800;font-size:12.5px;letter-spacing:1.2px;text-transform:uppercase;padding:4px 10px;border-radius:5px}
+  .hero h1{font-family:'Barlow Condensed';font-weight:800;font-size:clamp(38px,9vw,64px);line-height:.95;margin:12px 0 8px;letter-spacing:.3px}
+  .hero p.meta{font-weight:500;font-size:16px;color:#e8ebf0}
+  .hero p.meta b{color:#fff}
+  .stats{display:flex;gap:18px;margin-top:14px;flex-wrap:wrap}
+  .stats div{font-family:'Barlow Condensed';font-weight:700;font-size:14px;color:#cfd4dc;letter-spacing:.5px;text-transform:uppercase}
+  .stats b{display:block;font-size:30px;color:#fff;line-height:1}
+  .cta-row{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+  .btn{border:0;border-radius:11px;padding:13px 20px;font-weight:700;font-size:16px;font-family:'Barlow Condensed';letter-spacing:.5px;text-transform:uppercase}
+  .btn.p{background:var(--ev);color:var(--ev-ink)}
+  .btn.g{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.35)}
+
+  /* ---- finder ---- */
+  .finder{margin-top:-18px;position:relative;z-index:5}
+  .fcard{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 14px 40px rgba(15,17,21,.14);padding:16px}
+  .fcard h2{font-family:'Barlow Condensed';font-size:24px;font-weight:800;line-height:1.05}
+  .fcard h2 em{font-style:normal;color:var(--ev)}
+  .fcard p.sub{color:var(--muted);font-size:14.5px;margin:3px 0 12px}
+  .bar{display:flex;border:2px solid var(--ink);border-radius:13px;overflow:hidden;background:#fff}
+  .bar input{flex:1;min-width:0;border:0;outline:0;padding:14px;font-size:16px;font-family:inherit}
+  .bar button{border:0;background:var(--ink);color:#fff;font-family:'Barlow Condensed';font-weight:800;font-size:16px;letter-spacing:.5px;padding:0 18px}
+  .chips{display:flex;gap:7px;margin-top:11px;overflow-x:auto;padding-bottom:3px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chips button{flex:none;border:1px solid var(--line);background:var(--soft);border-radius:999px;padding:7px 13px;font-size:14.5px;font-weight:500}
+  .chips button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .scope{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--muted);margin-top:10px}
+  .scope label{display:flex;align-items:center;gap:6px;cursor:pointer}
+  .intent{display:none;margin-top:12px;background:var(--ev-soft);border:1px solid var(--ev);border-radius:11px;padding:10px 12px;font-size:15px;align-items:center;gap:10px}
+  .intent.show{display:flex}
+  .intent button{margin-left:auto;flex:none;border:0;background:var(--ink);color:#fff;border-radius:8px;padding:8px 12px;font-weight:700;font-size:14px}
+  #results{margin-top:12px}
+  .rhead{display:flex;justify-content:space-between;font-family:'Barlow Condensed';font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#394150;font-size:14.5px;margin-bottom:6px}
+  .rhead span:last-child{font-family:'Barlow';text-transform:none;font-weight:500;color:var(--muted);letter-spacing:0;font-size:13px}
+  .exh{display:flex;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--line)}
+  .exh .ic{flex:none;width:46px;height:46px;border-radius:11px;background:linear-gradient(145deg,#2a2e37,#12151b);color:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed';font-weight:800;font-size:19px}
+  .exh .bd{flex:1;min-width:0}
+  .exh .nm{font-weight:700;font-size:16px;line-height:1.2}
+  .exh .ct{font-size:12.5px;color:var(--gold-d);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+  .exh .ds{font-size:14px;color:#4b5563;line-height:1.35;margin-top:1px}
+  .exh .bt{flex:none;text-align:right;font-family:'Barlow Condensed';font-weight:700;font-size:17px;line-height:1.1}
+  .exh .bt small{display:block;font-family:'Barlow';font-weight:500;font-size:11px;color:var(--muted)}
+  .exh .ev{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.6px;border-radius:4px;padding:1px 5px;margin-left:5px;vertical-align:1px;color:#fff}
+  .ev.cme{background:#b87f00} .ev.cencan{background:#c8102e}
+  .save{flex:none;border:1.5px solid var(--line);background:#fff;border-radius:9px;width:38px;height:38px;font-size:17px}
+  .save.on{background:var(--ink);color:var(--gold);border-color:var(--ink)}
+  .none{padding:14px 0;color:var(--muted);font-size:15px}
+  .viewall{display:block;width:100%;text-align:center;border:0;border-top:1px solid var(--line);background:none;padding:13px;font-family:'Barlow Condensed';font-weight:800;letter-spacing:.5px;text-transform:uppercase;font-size:16px;color:var(--gold-d)}
+  .saved-bar{display:none;margin-top:8px;background:var(--ink);color:#fff;border-radius:11px;padding:11px 14px;font-size:14.5px;align-items:center;justify-content:space-between;gap:10px}
+  .saved-bar.show{display:flex}
+  .saved-bar button{border:0;background:var(--gold);color:#1a1205;border-radius:8px;padding:7px 12px;font-weight:700}
+
+  /* ---- sections ---- */
+  section.blk{padding:34px 0 6px}
+  h3.sec{font-family:'Barlow Condensed';font-size:28px;font-weight:800;letter-spacing:.3px;margin-bottom:12px}
+  .qgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .q{background:var(--soft);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:3px;min-height:92px}
+  .q .i{font-size:22px}
+  .q b{font-family:'Barlow Condensed';font-size:19px;font-weight:800;letter-spacing:.3px}
+  .q span{font-size:13px;color:var(--muted);line-height:1.3}
+  .q.hl{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .q.hl span{color:#bfc5ce}
+  .agenda{border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .agenda div{display:flex;gap:14px;padding:12px 14px;border-top:1px solid var(--line);align-items:baseline}
+  .agenda div:first-child{border-top:0}
+  .agenda time{flex:none;width:70px;font-family:'Barlow Condensed';font-weight:800;font-size:18px;color:var(--ev)}
+  .agenda b{display:block;font-size:15.5px;line-height:1.25}
+  .agenda small{color:var(--muted);font-size:13px}
+  .roles{display:grid;gap:10px}
+  .role{border:1px solid var(--line);border-radius:16px;padding:16px;background:#fff}
+  .role h4{font-family:'Barlow Condensed';font-size:22px;font-weight:800}
+  .role ul{margin:6px 0 12px 18px;color:#4b5563;font-size:14.5px}
+  .role button{border:1.5px solid var(--ink);background:#fff;border-radius:10px;padding:10px 16px;font-weight:700;font-family:'Barlow Condensed';letter-spacing:.4px;font-size:16px;text-transform:uppercase}
+  .role.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .role.dark ul{color:#c3c8d0}
+  .role.dark button{background:var(--gold);border-color:var(--gold);color:#1a1205}
+  .spons{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+  .spons div{flex:none;width:130px;height:62px;border:1px solid var(--line);border-radius:11px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed';font-weight:800;color:#8a919c;letter-spacing:.5px;text-align:center;line-height:1}
+  .spons .tier{font-size:11px;font-weight:700;display:block;color:#a8aeb8;margin-bottom:3px;text-transform:uppercase}
+  footer{margin-top:40px;background:var(--ink);color:#aeb4be;padding:28px 0 20px;font-size:14px}
+  footer b{color:#fff;font-family:'Barlow Condensed';font-size:20px;letter-spacing:.4px}
+  footer .cols{display:grid;gap:16px;margin-top:8px}
+  footer a{display:block;padding:3px 0}
+
+  /* ---- bottom tab bar (mobile) ---- */
+  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:#fff;border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom)}
+  .tabbar a{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:8px 0 7px;font-size:11px;font-weight:600;color:#667085}
+  .tabbar a span{font-size:20px;line-height:1.1}
+  .tabbar a.on{color:var(--ink)}
+  .tabbar a.on span{filter:none}
+
+  /* ---- sign-in sheet ---- */
+  .scrim{position:fixed;inset:0;background:rgba(10,12,16,.55);z-index:60;display:none;align-items:flex-end;justify-content:center}
+  .scrim.show{display:flex}
+  .sheet{background:#fff;width:100%;max-width:460px;border-radius:20px 20px 0 0;padding:20px 18px calc(22px + env(safe-area-inset-bottom));max-height:92vh;overflow:auto}
+  .sheet h4{font-family:'Barlow Condensed';font-size:26px;font-weight:800}
+  .sheet p.sub{color:var(--muted);font-size:14.5px;margin:2px 0 12px}
+  .seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+  .seg button{border:1.5px solid var(--line);background:#fff;border-radius:11px;padding:10px;font-weight:700;font-size:15px}
+  .seg button.on{border-color:var(--ink);background:var(--ink);color:#fff}
+  .fld{margin-bottom:10px}
+  .fld label{display:block;font-size:12.5px;font-weight:700;color:#4b5563;margin-bottom:3px}
+  .fld input{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px;font-size:16px;font-family:inherit}
+  .go{width:100%;border:0;background:var(--gold);color:#1a1205;font-family:'Barlow Condensed';font-weight:800;font-size:19px;letter-spacing:.5px;padding:13px;border-radius:11px;margin-top:4px}
+  .otp{display:flex;gap:8px;justify-content:center;margin:12px 0}
+  .otp input{width:48px;height:56px;text-align:center;font-size:24px;font-weight:700;border:1.5px solid var(--line);border-radius:11px;font-family:inherit}
+  .demo{background:#fff6dd;border:1px dashed var(--gold-d);border-radius:9px;padding:7px 10px;font-size:12.5px;color:#7a5600;margin-top:6px}
+  .close{float:right;border:0;background:var(--soft);width:34px;height:34px;border-radius:50%;font-size:17px}
+  .step{display:none}.step.show{display:block}
+
+  /* ---- desktop ---- */
+  @media (min-width:860px){
+    body{padding-bottom:0}
+    .tabbar{display:none}
+    .dnav{display:flex;margin-left:28px}
+    .evsw{max-width:420px;padding:0}
+    .hbar{height:68px}
+    .hero .wrap{padding-top:90px;padding-bottom:70px}
+    .finder{margin-top:-46px}
+    .fcard{padding:24px 28px}
+    .fcard h2{font-size:32px}
+    .qgrid{grid-template-columns:repeat(4,1fr)}
+    .roles{grid-template-columns:1fr 1fr}
+    .scrim{align-items:center}
+    .sheet{border-radius:20px}
+    footer .cols{grid-template-columns:2fr 1fr 1fr 1fr}
+    .twocol{display:grid;grid-template-columns:1.1fr .9fr;gap:28px;align-items:start}
+  }
+</style>
+</head>
+<body data-ev="cme">
+
+<header>
+  <div class="wrap">
+    <div class="hbar">
+      <div class="brand"><b class="cond">CANADIAN TRADE-EX</b><small>MINING EXPOS · NORTHERN ONTARIO</small></div>
+      <nav class="dnav"><a href="#finder">Find exhibitors</a><a href="#plan">Plan your visit</a><a href="#schedule">Agenda</a><a href="#roles">Exhibit &amp; sponsor</a></nav>
+      <div class="sp"></div>
+      <button class="signin" id="signinBtn"><span class="av" id="av">R</span><span id="signinTxt">Sign in</span></button>
+    </div>
+    <div class="evsw" role="group" aria-label="Choose event">
+      <button id="sw-cme" aria-pressed="true"><b>Canadian Mining Expo</b><span>June 9–10, 2027 · Timmins</span></button>
+      <button id="sw-cencan" aria-pressed="false"><b>CEN-CAN Expo</b><span>Sept 9–10, 2026 · Thunder Bay</span></button>
+    </div>
+  </div>
+</header>
+
+<div class="hero" id="hero">
+  <div class="wrap">
+    <span class="badge" id="hBadge">Where the world comes to explore</span>
+    <h1 id="hTitle">Canadian Mining Expo 2027</h1>
+    <p class="meta" id="hMeta"><b>June 9–10, 2027</b> · McIntyre Complex, Timmins</p>
+    <div class="stats" id="hStats"></div>
+    <div class="cta-row">
+      <button class="btn p" id="ctaTix">Get tickets</button>
+      <button class="btn g" onclick="document.getElementById('q').focus();document.getElementById('finder').scrollIntoView({behavior:'smooth'})">Find exhibitors</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+  <!-- RECOMMENDATION FINDER -->
+  <div class="finder" id="finder">
+    <div class="fcard">
+      <h2>Tell us what you need — we’ll find the <em>right exhibitors</em>.</h2>
+      <p class="sub">Describe a problem, product or job in plain words. We match you to companies on the floor.</p>
+      <div class="bar"><input id="q" type="search" placeholder="e.g. we need ventilation for a new decline" autocomplete="off" enterkeyhint="search" /><button id="go">FIND</button></div>
+      <div class="chips" id="chips"></div>
+      <div class="scope"><label><input type="checkbox" id="bothEv" /> Search both events</label><span id="scopeNote"></span></div>
+      <div class="intent" id="intent"><span id="intentMsg"></span><button id="intentBtn">Open</button></div>
+      <div id="results"></div>
+      <div class="saved-bar" id="savedBar"><span id="savedTxt"></span><button id="savedGo">Save my list</button></div>
+    </div>
+  </div>
+
+  <!-- PLAN -->
+  <section class="blk" id="plan">
+    <h3 class="sec">Plan your visit</h3>
+    <div class="qgrid" id="qgrid"></div>
+  </section>
+
+  <section class="blk" id="schedule">
+    <div class="twocol">
+      <div>
+        <h3 class="sec">Agenda highlights</h3>
+        <div class="agenda" id="agenda"></div>
+      </div>
+      <div>
+        <h3 class="sec" style="margin-top:0">Sponsors</h3>
+        <div class="spons" id="spons"></div>
+        <p style="color:var(--muted);font-size:13.5px;margin-top:8px">Sponsor logos and tiers come from the admin platform.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROLES -->
+  <section class="blk" id="roles">
+    <h3 class="sec">One place for the whole show</h3>
+    <div class="roles">
+      <div class="role">
+        <h4>Attendees</h4>
+        <ul><li>Save the exhibitors you want to see</li><li>Get your list by email, with booth numbers</li><li>No password — just a 5-digit email code</li></ul>
+        <button data-role="attendee" class="open-sign">Create attendee account</button>
+      </div>
+      <div class="role dark">
+        <h4>Exhibitors</h4>
+        <ul><li>Keep your company profile current — it powers the matching</li><li>See who saved and viewed your booth</li><li>Message attendees who ask for you</li></ul>
+        <button data-role="exhibitor" class="open-sign">Exhibitor sign in</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <b>CANADIAN TRADE-EX</b>
+    <div class="cols">
+      <div>Organizer of the Canadian Mining Expo and CEN-CAN Expo.<br />info@canadiantradex.com · Technical support 705-264-2251</div>
+      <div><a href="#">Canadian Mining Expo</a><a href="#">CEN-CAN Expo</a></div>
+      <div><a href="#">Become an exhibitor</a><a href="#">Sponsorship</a><a href="#">Media desk</a></div>
+      <div><a href="#">Privacy policy</a><a href="#">Terms</a></div>
+    </div>
+    <p style="margin-top:16px;font-size:12.5px">© 2026 Canadian Trade-Ex · Design mockup — not a live site</p>
+  </div>
+</footer>
+
+<nav class="tabbar">
+  <a class="on" href="#"><span>🏠</span>Home</a>
+  <a href="#finder"><span>🔎</span>Find</a>
+  <a href="#schedule"><span>📅</span>Agenda</a>
+  <a href="#plan"><span>🗺️</span>Plan</a>
+  <a href="#" id="tabMe"><span>👤</span>My Show</a>
+</nav>
+
+<!-- SIGN-IN SHEET -->
+<div class="scrim" id="scrim">
+  <div class="sheet" role="dialog" aria-modal="true">
+    <button class="close" id="closeSheet" aria-label="Close">✕</button>
+    <div class="step show" id="s1">
+      <h4>Sign in or sign up</h4>
+      <p class="sub">No password. We email you a 5-digit code.</p>
+      <div class="seg"><button id="roleA" class="on">I’m attending</button><button id="roleE">I’m exhibiting</button></div>
+      <div class="fld"><label>Full name *</label><input id="fName" autocomplete="name" /></div>
+      <div class="fld"><label>Email *</label><input id="fEmail" type="email" autocomplete="email" inputmode="email" /></div>
+      <div class="fld"><label>Company *</label><input id="fCo" autocomplete="organization" /></div>
+      <div class="fld"><label>Cell number *</label><input id="fCell" type="tel" autocomplete="tel" inputmode="tel" /></div>
+      <button class="go" id="send">Email me a code</button>
+    </div>
+    <div class="step" id="s2">
+      <h4>Check your email</h4>
+      <p class="sub">We sent a 5-digit code to <b id="toEmail"></b>.</p>
+      <div class="otp" id="otp"><input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric"></div>
+      <div class="demo">DEMO ONLY — code shown here: <b id="demoCode"></b>. Live build: server generates, emails and verifies the code.</div>
+      <button class="go" id="verify">Verify</button>
+    </div>
+    <div class="step" id="s3">
+      <h4>You’re in, <span id="doneName"></span>!</h4>
+      <p class="sub" id="doneMsg"></p>
+      <button class="go" id="doneBtn">Back to the show</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- MOCKUP DATA ----------
+   Real build: events, exhibitors, booths, agenda & sponsors come from the admin platform's API.
+   Ranking is semantic (embeddings + pgvector, hybrid with keyword/rules) over each exhibitor's profile.
+   Results are COMPANY-level. Exhibitor list below is placeholder, not real exhibitors. */
+const EVENTS = {
+  cme:{ name:"Canadian Mining Expo 2027", badge:"Where the world comes to explore", meta:"<b>June 9–10, 2027</b> · McIntyre Complex, Timmins",
+    img:"https://virtex.canadianminingexpo.com/images/events/30/5T9uAl85UY.jpg",
+    stats:[["300+","Exhibits"],["2","Days"],["Live","Demos"]],
+    chips:["Processing","Geo Physics","Production Tech","Jobs","Environmental"],
+    quick:[["🎟️","Tickets","Expo passes & registration"],["🗺️","Floor plan","Find any booth"],["💼","Job Fair","Companies hiring on site",1],["🏨","Accommodations","Hotels near the venue"]],
+    agenda:[["9:00","Opening ceremonies","Main stage"],["10:30","Underground automation panel","Conference room A"],["12:00","Live equipment demos","Outdoor yard"],["6:00","Industry social","McIntyre Arena"]],
+    spons:[["Palladium","Placeholder"],["Gold","Placeholder"],["Gold","Placeholder"],["Event","Placeholder"]] },
+  cencan:{ name:"CEN-CAN Expo 2026", badge:"Join the boom", meta:"<b>September 9–10, 2026</b> · Fort William Gardens, Thunder Bay",
+    img:"",
+    stats:[["300+","Exhibits"],["2","Days"],["Job","Fair"]],
+    chips:["Equipment","Energy","Exploration","Jobs","Safety"],
+    quick:[["🎟️","Expo tickets","Free pre-registration"],["🗺️","Floor plans","Find any booth"],["🏆","JackLeg","Competition schedule"],["🍽️","Gala dinner","VIP social & gala"]],
+    agenda:[["9:00","Opening ceremonies","Main stage"],["11:00","Projects in the pipeline","Conference"],["1:00","JackLeg competition","Arena floor"],["7:00","Gala dinner","Banquet hall"]],
+    spons:[["Palladium","Placeholder"],["Gold","Placeholder"],["Gold","Placeholder"],["Event","Placeholder"]] }
+};
+const EXH = [
+ {n:"Northforge Drilling Systems",c:"Drilling & Blasting",b:"A-112",ev:["cme","cencan"],d:"Surface & underground drilling — rigs, automation and consumables.",k:"drill rigs jumbo rods bits blasting automated drilling exploration",j:"driller drill technician blasting engineer"},
+ {n:"Boreal Heavy Equipment",c:"Haulage & Loaders",b:"B-204",ev:["cme","cencan"],d:"Haulage and loading fleet plus parts and service.",k:"haul trucks loaders graders dozers fleet parts undercarriage equipment",j:"heavy duty mechanic equipment operator parts"},
+ {n:"Terra Core Exploration",c:"Geo Physics",b:"C-038",ev:["cme"],d:"Exploration drilling, assay and geoscience.",k:"diamond core drilling assay geophysics geochemistry geophysical survey exploration resource",j:"geologist geophysicist core logger"},
+ {n:"GuardLine Safety Supply",c:"Safety & PPE",b:"A-061",ev:["cme","cencan"],d:"Mine safety equipment, PPE and emergency refuge.",k:"gas detection self-rescuers fall protection hi-vis refuge first aid safety ppe",j:"safety advisor OHS coordinator"},
+ {n:"DeepVent Mine Air",c:"Ventilation & Cooling",b:"D-150",ev:["cme"],d:"Underground ventilation, cooling and ventilation-on-demand.",k:"ventilation fans ducting refrigeration cooling airflow decline underground air",j:"ventilation engineer controls specialist"},
+ {n:"RockShield Ground Control",c:"Ground Support",b:"C-127",ev:["cme"],d:"Ground support products and engineering.",k:"rock bolts screen mesh shotcrete cable bolts ground support",j:"ground control engineer shotcrete operator"},
+ {n:"OreFlow Processing",c:"Processing",b:"E-210",ev:["cme"],d:"Comminution and concentration — plant design to upgrades.",k:"crushers mills flotation screens cyclones grinding concentrator plant processing",j:"process engineer metallurgist millwright"},
+ {n:"Voltec Mine Electrical",c:"Production Tech",b:"B-088",ev:["cme","cencan"],d:"Electrification, power distribution and automation.",k:"substations cable PLC automation electrification power distribution controls SCADA technology",j:"electrician automation technician"},
+ {n:"ClearWater Environmental",c:"Environmental",b:"D-019",ev:["cme","cencan"],d:"Water, tailings and closure/reclamation services.",k:"water treatment tailings dust suppression reclamation closure permitting monitoring environmental",j:"environmental scientist reclamation technician"},
+ {n:"Lakehead Energy Services",c:"Energy",b:"F-031",ev:["cencan"],d:"Power, transmission and renewable energy for remote sites.",k:"energy power transmission renewable solar wind microgrid diesel generators remote",j:"lineman power engineer"},
+ {n:"Pathway Mining Careers",c:"Jobs",b:"JOB FAIR",ev:["cme","cencan"],d:"The on-site Job Fair — hiring booths, apprenticeships, training.",k:"job fair hiring apprenticeships training recruitment careers work",j:"all trades apprentice operator student new grad"},
+ {n:"Nighthawk Lubricants",c:"Fluids & Maintenance",b:"E-073",ev:["cme","cencan"],d:"Lubricants, fluids and condition monitoring.",k:"lubricants hydraulic fluids grease filtration oil analysis maintenance",j:"lubrication technician territory sales"},
+ {n:"SignalPost Mine Comms",c:"Production Tech",b:"A-145",ev:["cme"],d:"Underground communications, networks and tracking.",k:"leaky feeder wifi mesh network personnel tracking tele-remote collision avoidance communications",j:"network technician RF engineer"}
+];
+const INTENTS = [
+  {re:/\b(job|jobs|career|hiring|apprentice|resume|work)\b/i,msg:"Here for work? The Job Fair connects you with hiring companies.",cta:"Job Fair"},
+  {re:/\b(exhibit|booth|vendor|sell|showcase)\b/i,msg:"Want to exhibit at this show?",cta:"Book a booth"},
+  {re:/\b(sponsor|sponsorship)\b/i,msg:"Interested in sponsoring?",cta:"Sponsor options"},
+  {re:/\b(press|media|journalist)\b/i,msg:"Media enquiry?",cta:"Media desk"}
+];
+const $=s=>document.querySelector(s);
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+let ev="cme", chip="", saved=new Set(JSON.parse(store.get('ctx_saved')||'[]')), user=JSON.parse(store.get('ctx_user')||'null'), role="attendee";
+
+/* ---------- event switching ---------- */
+function setEvent(k){
+  ev=k; const E=EVENTS[k]; document.body.dataset.ev=k;
+  $('#sw-cme').setAttribute('aria-pressed',k==='cme'); $('#sw-cencan').setAttribute('aria-pressed',k==='cencan');
+  $('#hTitle').textContent=E.name; $('#hBadge').textContent=E.badge; $('#hMeta').innerHTML=E.meta;
+  $('#hero').style.backgroundImage=E.img?`url(${E.img})`:'linear-gradient(135deg,#1c1f26 0%,#3b0d14 100%)';
+  $('#hStats').innerHTML=E.stats.map(s=>`<div><b>${s[0]}</b>${s[1]}</div>`).join('');
+  $('#chips').innerHTML=E.chips.map(c=>`<button data-c="${c}">${c}</button>`).join('');
+  $('#qgrid').innerHTML=E.quick.map(x=>`<a href="#" class="q ${x[3]?'hl':''}"><span class="i">${x[0]}</span><b>${x[1]}</b><span>${x[2]}</span></a>`).join('');
+  $('#agenda').innerHTML=E.agenda.map(a=>`<div><time>${a[0]}</time><p><b>${a[1]}</b><small>${a[2]}</small></p></div>`).join('');
+  $('#spons').innerHTML=E.spons.map(s=>`<div><span><span class="tier">${s[0]}</span>LOGO</span></div>`).join('');
+  $('#ctaTix').textContent=k==='cme'?'Get tickets':'Register free';
+  chip=''; run();
+}
+$('#sw-cme').onclick=()=>setEvent('cme'); $('#sw-cencan').onclick=()=>setEvent('cencan');
+
+/* ---------- finder ---------- */
+function score(e,t){
+  const words=t.toLowerCase().split(/\W+/).filter(w=>w.length>2); if(!words.length) return 0;
+  const hay=(e.n+' '+e.c+' '+e.d+' '+e.k+' '+e.j).toLowerCase(); let s=0;
+  words.forEach(w=>{ if(hay.includes(w)) s+= (e.k.toLowerCase().includes(w)?2:1) + (e.c.toLowerCase().includes(w)?1:0); });
+  return s;
+}
+let showAll=false;
+function run(){
+  const t=($('#q').value+' '+chip).trim(), both=$('#bothEv').checked;
+  const pool=EXH.filter(e=>both||e.ev.includes(ev));
+  $('#scopeNote').textContent=both?'Showing both events':'Showing '+EVENTS[ev].name.replace(/ 20\d\d/,'');
+  const it=INTENTS.find(i=>i.re.test(t)); $('#intent').classList.toggle('show',!!it);
+  if(it){ $('#intentMsg').textContent=it.msg; $('#intentBtn').textContent=it.cta; }
+  let list;
+  if(!t){ list=pool.slice(0,4).map(e=>({e,s:0})); }
+  else list=pool.map(e=>({e,s:score(e,t)})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s);
+  const cap=showAll?list.length:4, shown=list.slice(0,cap);
+  const head=t?`Recommended exhibitors`:`Featured exhibitors`;
+  let h=`<div class="rhead"><span>${head}</span><span>${list.length} ${t?'match':'listed'}${list.length===1?'':'es'}</span></div>`;
+  if(!shown.length) h+=`<p class="none">No strong match. Try different words, or browse a category above.</p>`;
+  h+=shown.map(({e})=>`<div class="exh"><div class="ic">${e.n.split(' ').slice(0,2).map(w=>w[0]).join('')}</div>
+    <div class="bd"><div class="ct">${e.c}${both?e.ev.map(x=>`<span class="ev ${x}">${x==='cme'?'CME':'CEN-CAN'}</span>`).join(''):''}</div><div class="nm">${e.n}</div><div class="ds">${e.d}</div></div>
+    <div class="bt">${e.b}<small>booth</small></div>
+    <button class="save ${saved.has(e.n)?'on':''}" data-n="${e.n}" aria-label="Save ${e.n}">${saved.has(e.n)?'★':'☆'}</button></div>`).join('');
+  if(list.length>4&&!showAll) h+=`<button class="viewall" id="va">View all ${list.length} exhibitors →</button>`;
+  $('#results').innerHTML=h; paintSaved();
+}
+function paintSaved(){
+  const n=saved.size; $('#savedBar').classList.toggle('show',n>0);
+  $('#savedTxt').textContent=`★ ${n} exhibitor${n===1?'':'s'} saved`;
+  $('#savedGo').textContent=user?'Email me my list':'Save my list';
+  store.set('ctx_saved',JSON.stringify([...saved]));
+}
+$('#q').addEventListener('input',()=>{showAll=false;chip='';document.querySelectorAll('#chips button').forEach(b=>b.classList.remove('on'));run()});
+$('#go').onclick=run; $('#bothEv').onchange=()=>{showAll=false;run()};
+$('#chips').onclick=e=>{const b=e.target.closest('button');if(!b)return;const on=!b.classList.contains('on');
+  document.querySelectorAll('#chips button').forEach(x=>x.classList.remove('on')); chip=on?b.dataset.c:''; b.classList.toggle('on',on); $('#q').value=''; showAll=false; run()};
+$('#results').onclick=e=>{
+  if(e.target.id==='va'){showAll=true;run();return}
+  const s=e.target.closest('.save'); if(s){const n=s.dataset.n; saved.has(n)?saved.delete(n):saved.add(n); run()}
+};
+
+/* ---------- sign-in (no password, 5-digit code) — DEMO: client-side; live build must be server-driven ---------- */
+let code='';
+const open=()=>$('#scrim').classList.add('show'), close=()=>$('#scrim').classList.remove('show');
+function step(n){document.querySelectorAll('.step').forEach(s=>s.classList.remove('show'));$('#s'+n).classList.add('show')}
+function setRole(r){role=r;$('#roleA').classList.toggle('on',r==='attendee');$('#roleE').classList.toggle('on',r==='exhibitor')}
+$('#roleA').onclick=()=>setRole('attendee'); $('#roleE').onclick=()=>setRole('exhibitor');
+function paintUser(){ $('#signinBtn').classList.toggle('on',!!user); $('#av').textContent=user?user.name[0].toUpperCase():''; $('#signinTxt').textContent=user?user.name.split(' ')[0]:'Sign in'; }
+function openSign(r){ if(r)setRole(r); if(user){ if(confirm('Sign out '+user.name+'?')){user=null;store.del('ctx_user');paintUser();paintSaved()} return } step(1); open(); }
+$('#signinBtn').onclick=()=>openSign(); $('#tabMe').onclick=e=>{e.preventDefault();openSign()}; $('#savedGo').onclick=()=>user?alert('Demo: your list of '+saved.size+' exhibitors would be emailed to '+user.email):openSign('attendee');
+document.querySelectorAll('.open-sign').forEach(b=>b.onclick=()=>openSign(b.dataset.role));
+$('#closeSheet').onclick=close; $('#scrim').onclick=e=>{if(e.target.id==='scrim')close()};
+$('#send').onclick=()=>{
+  const f={name:$('#fName').value.trim(),email:$('#fEmail').value.trim(),co:$('#fCo').value.trim(),cell:$('#fCell').value.trim()};
+  if(!f.name||!/.+@.+\..+/.test(f.email)||!f.co||!f.cell){alert('Please complete all required fields.');return}
+  window._f=f; code=String(Math.floor(10000+Math.random()*90000)); $('#demoCode').textContent=code; $('#toEmail').textContent=f.email; step(2); $('#otp input').focus();
+};
+const boxes=[...document.querySelectorAll('#otp input')];
+boxes.forEach((b,i)=>{b.oninput=()=>{b.value=b.value.replace(/\D/g,'');if(b.value&&boxes[i+1])boxes[i+1].focus()};b.onkeydown=e=>{if(e.key==='Backspace'&&!b.value&&boxes[i-1])boxes[i-1].focus()}});
+$('#verify').onclick=()=>{
+  if(boxes.map(b=>b.value).join('')!==code){alert('That code doesn’t match.');return}
+  user={...window._f,role}; store.set('ctx_user',JSON.stringify(user)); paintUser(); paintSaved();
+  $('#doneName').textContent=user.name.split(' ')[0];
+  $('#doneMsg').textContent=role==='exhibitor'?'Exhibitor access: manage your profile, see who saved your booth.':'Your saved exhibitors will be emailed to you with booth numbers.';
+  step(3);
+};
+$('#doneBtn').onclick=close;
+
+paintUser(); setEvent('cme');
+</script>
+</body>
+</html>
