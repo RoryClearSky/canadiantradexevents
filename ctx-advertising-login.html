@@ -1,0 +1,159 @@
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trade-Ex Advertising Sign In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: staff sign-in. Dark brand panel (ink + gold) with what the portal does, and a white sign-in card.
+   On a phone the brand panel shrinks to a header. Invite-only: no sign-up, no Google or Apple. */
+:root{
+  --display:'Barlow Condensed','Arial Narrow',sans-serif; --body:'Barlow',system-ui,Arial,sans-serif;
+  --ink:#14181f; --ink2:#0b0d12; --gold:#f2a900; --tint:#fff3d0; --bg:#f4f5f7; --line:#dde1e8; --muted:#5d6675; --err:#c4251a; --ok:#14833b; --field:#f5f6f8;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--ink2);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
+button,input{font:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+[hidden]{display:none!important}
+.page{min-height:100%;display:grid}
+@media(min-width:900px){.page{grid-template-columns:1.1fr 1fr}}
+.brand{background:linear-gradient(170deg,#1c212b,#0b0d12);color:#fff;padding:26px 22px 22px;display:flex;flex-direction:column;gap:16px;position:relative;overflow:hidden}
+@media(min-width:900px){.brand{padding:56px 56px;justify-content:center;gap:24px}}
+.brand::after{content:"";position:absolute;right:-90px;bottom:-90px;width:300px;height:300px;border-radius:50%;border:44px solid rgba(242,169,0,.12);pointer-events:none}
+.logo{font-family:var(--display);font-weight:800;font-size:30px;letter-spacing:1px;line-height:1}
+.logo i{font-style:normal;color:var(--gold)}
+.brand .tag{font-family:var(--display);letter-spacing:2px;text-transform:uppercase;font-size:13px;color:var(--gold);font-weight:700}
+.brand h1{font-family:var(--display);font-weight:800;font-size:clamp(34px,6vw,54px);line-height:.98;margin:0;max-width:14ch}
+.brand ul{list-style:none;margin:0;padding:0;display:none;gap:12px}
+@media(min-width:900px){.brand ul{display:grid}}
+.brand li{display:flex;gap:12px;color:#cdd3dd;font-size:16px}
+.brand li b{color:#fff;display:block}
+.brand li i{flex:none;width:28px;height:28px;border-radius:8px;background:rgba(242,169,0,.16);color:var(--gold);display:grid;place-items:center;font-style:normal;font-weight:800;font-size:14px}
+.side{background:#fff;padding:24px 20px calc(28px + env(safe-area-inset-bottom,0px));display:flex;align-items:flex-start;justify-content:center;border-radius:24px 24px 0 0;margin-top:-6px}
+@media(min-width:900px){.side{align-items:center;border-radius:0;margin:0;padding:48px}}
+.card{width:100%;max-width:400px;display:flex;flex-direction:column;gap:14px}
+.card h2{font-family:var(--display);font-size:32px;font-weight:800;margin:0;line-height:1}
+.sub{margin:3px 0 0;color:var(--muted);font-size:15px}
+.step{display:none;flex-direction:column;gap:14px}.step.show{display:flex}
+.fld{display:flex;flex-direction:column;gap:5px}
+.fld label{font-size:13px;font-weight:600;color:#3a4252}
+.inp{position:relative;display:flex;align-items:center}
+.inp input{width:100%;height:52px;border:1.5px solid var(--line);background:var(--field);border-radius:13px;padding:0 14px;font-size:16px}
+.inp input:focus{border-color:var(--gold);background:#fff;outline:none;box-shadow:0 0 0 4px var(--tint)}
+.inp.bad input{border-color:var(--err)}
+.eye{position:absolute;right:6px;border:0;background:none;color:var(--muted);font-weight:600;font-size:13px;padding:10px;border-radius:9px;cursor:pointer}
+.msg{font-size:13.5px;color:var(--err);min-height:0}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px}
+.row label{display:flex;gap:8px;align-items:center;color:#3a4252;cursor:pointer}
+.row input[type=checkbox]{width:18px;height:18px;accent-color:var(--ink)}
+.lnk{border:0;background:none;color:#8a6100;font-weight:700;padding:6px 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.go{height:54px;border:0;border-radius:14px;background:var(--gold);color:#1a1205;font-family:var(--display);font-weight:800;font-size:20px;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px}
+.go[disabled]{opacity:.7;cursor:wait}
+.spin{width:18px;height:18px;border-radius:50%;border:3px solid currentColor;border-right-color:transparent;animation:rot .7s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.otp{display:flex;gap:8px;justify-content:center}
+.otp input{width:52px;height:60px;text-align:center;font-size:26px;font-weight:700;border:1.5px solid var(--line);border-radius:12px;background:var(--field)}
+.otp input:focus{border-color:var(--gold);background:#fff;outline:none;box-shadow:0 0 0 4px var(--tint)}
+.invite{background:var(--bg);border-radius:12px;padding:10px 13px;font-size:14px;color:var(--muted)}
+.demo{font-size:12.5px;color:#6b4c00;background:#fff6dd;border:1px dashed #b87f00;border-radius:10px;padding:8px 11px}
+.ok{color:var(--ok);font-size:14px}
+@media(prefers-reduced-motion:reduce){.spin{animation-duration:2s}}
+</style>
+
+<div class="page">
+  <section class="brand">
+    <div class="logo">CANADIAN <i>TRADE-EX</i></div>
+    <div class="tag">Advertising · sales agents</div>
+    <h1>Book banners for the next 12 newsletters</h1>
+    <ul>
+      <li><i>1</i><span><b>See what's open</b>Every spot in the next 12 issues, at a glance.</span></li>
+      <li><i>2</i><span><b>Book in minutes</b>Upload the banner, set the link, pick the spot.</span></li>
+      <li><i>3</i><span><b>Invoice goes to admin</b>One click sends the invoice request. No emailing.</span></li>
+    </ul>
+  </section>
+
+  <main class="side"><div class="card">
+    <!-- STEP 1 -->
+    <form class="step show" id="s1" novalidate>
+      <div><h2>Sales agent sign in</h2><p class="sub">Use the work email Trade-Ex set up for you.</p></div>
+      <div class="fld"><label for="email">Work email</label><div class="inp" id="eW"><input id="email" type="email" inputmode="email" autocomplete="username" placeholder="you@canadiantradex.com"></div><div class="msg" id="eM" role="alert"></div></div>
+      <div class="fld"><label for="pw">Password</label><div class="inp" id="pW"><input id="pw" type="password" autocomplete="current-password" placeholder="Your password"><button type="button" class="eye" id="eye" aria-label="Show password">Show</button></div><div class="msg" id="pM" role="alert"></div></div>
+      <div class="row"><label><input type="checkbox" id="rem"> Keep me signed in on this device</label><button type="button" class="lnk" id="forgot">Forgot password?</button></div>
+      <button class="go" id="go" type="submit"><span id="goT">Sign in</span></button>
+      <div class="invite">Access is by invitation. To get an account or change your role, ask the Trade-Ex admin.</div>
+      <div class="demo">Demo account: <b>jordan@canadiantradex.example</b> and password <b>TradeEx2026!</b>. The live site checks credentials on the server.</div>
+    </form>
+
+    <!-- STEP 2: code -->
+    <div class="step" id="s2">
+      <div><h2>Check your email</h2><p class="sub">We sent a 5-digit code to <b id="toE"></b>. Enter it to finish signing in.</p></div>
+      <div class="otp" id="otp"><input maxlength="1" inputmode="numeric" aria-label="Digit 1" autocomplete="one-time-code"><input maxlength="1" inputmode="numeric" aria-label="Digit 2"><input maxlength="1" inputmode="numeric" aria-label="Digit 3"><input maxlength="1" inputmode="numeric" aria-label="Digit 4"><input maxlength="1" inputmode="numeric" aria-label="Digit 5"></div>
+      <div class="msg" id="oM" style="text-align:center" role="alert"></div>
+      <div class="demo">Demo only: your code is <b id="demoC"></b>.</div>
+      <button class="go" id="verify" type="button">Verify and continue</button>
+      <div style="text-align:center"><button class="lnk" id="resend" type="button">Send a new code</button> · <button class="lnk" id="back" type="button">Use a different email</button></div>
+    </div>
+
+    <!-- FORGOT -->
+    <form class="step" id="s3" novalidate>
+      <div><h2>Reset your password</h2><p class="sub">Enter your work email and we'll send a reset link.</p></div>
+      <div class="fld"><label for="rEmail">Work email</label><div class="inp" id="rW"><input id="rEmail" type="email" inputmode="email" autocomplete="username"></div><div class="msg" id="rM" role="alert"></div></div>
+      <button class="go" type="submit">Send reset link</button>
+      <div class="ok" id="rOk" role="status"></div>
+      <div style="text-align:center"><button class="lnk" id="rBack" type="button">Back to sign in</button></div>
+    </form>
+  </div></main>
+</div>
+
+<script>
+/* Demo auth. Live build: staff accounts are created by the admin, passwords are hashed, the 5-digit code is emailed and checked
+   on the server, sessions are server-side, and repeated failures lock the account for a few minutes. */
+var DEMO={email:"jordan@canadiantradex.example",pw:"TradeEx2026!",name:"Jordan P."};
+var $=function(s){return document.querySelector(s)};
+var tries=0,code="",lockedUntil=0,pending=null;
+function show(n){['s1','s2','s3'].forEach(function(id,i){$('#'+id).classList.toggle('show',i===n-1)});}
+function clr(){['eM','pM','oM','rM'].forEach(function(i){$('#'+i).textContent=''});['eW','pW','rW'].forEach(function(i){$('#'+i).classList.remove('bad')})}
+var emailRe=/^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+$('#eye').onclick=function(){var p=$('#pw'),s=p.type==='password';p.type=s?'text':'password';this.textContent=s?'Hide':'Show';this.setAttribute('aria-label',s?'Hide password':'Show password')};
+function busy(on,t){var g=$('#go');g.disabled=on;$('#goT').textContent=on?t:'Sign in';var sp=g.querySelector('.spin');if(on&&!sp)g.insertAdjacentHTML('afterbegin','<span class="spin"></span>');if(!on&&sp)sp.remove()}
+$('#s1').addEventListener('submit',function(e){
+  e.preventDefault();clr();var em=$('#email').value.trim().toLowerCase(),pw=$('#pw').value,ok=true;
+  if(Date.now()<lockedUntil){$('#pM').textContent='Too many attempts. Try again in a few minutes, or reset your password.';return}
+  if(!emailRe.test(em)){$('#eM').textContent='Enter your work email, like you@canadiantradex.com.';$('#eW').classList.add('bad');ok=false}
+  if(!pw){$('#pM').textContent='Enter your password.';$('#pW').classList.add('bad');ok=false}
+  if(!ok)return;
+  busy(true,'Signing in');
+  setTimeout(function(){
+    busy(false);
+    if(em===DEMO.email&&pw===DEMO.pw){tries=0;pending={email:em,name:DEMO.name,remember:$('#rem').checked};code=String(Math.floor(10000+Math.random()*90000));$('#demoC').textContent=code;$('#toE').textContent=em;
+      document.querySelectorAll('#otp input').forEach(function(b){b.value=''});show(2);$('#otp input').focus()}
+    else{tries++;$('#pW').classList.add('bad');
+      if(tries>=5){lockedUntil=Date.now()+5*60000;$('#pM').textContent='Too many attempts. This sign in is locked for 5 minutes. You can reset your password instead.'}
+      else $('#pM').textContent='That email and password don’t match. '+(5-tries)+' '+(5-tries===1?'try':'tries')+' left.'}
+  },800);
+});
+var boxes=[].slice.call(document.querySelectorAll('#otp input'));
+boxes.forEach(function(b,i){
+  b.addEventListener('input',function(){b.value=b.value.replace(/\D/g,'').slice(-1);if(b.value&&boxes[i+1])boxes[i+1].focus();if(boxes.every(function(x){return x.value}))verify()});
+  b.addEventListener('keydown',function(e){if(e.key==='Backspace'&&!b.value&&boxes[i-1])boxes[i-1].focus()});
+  b.addEventListener('paste',function(e){var t=(e.clipboardData.getData('text')||'').replace(/\D/g,'').slice(0,5);if(!t)return;e.preventDefault();boxes.forEach(function(x,j){x.value=t[j]||''});boxes[Math.min(t.length,4)].focus();if(t.length===5)verify()});
+});
+function verify(){
+  var v=boxes.map(function(b){return b.value}).join('');
+  if(v.length<5){$('#oM').textContent='Enter all 5 digits.';return}
+  if(v!==code){$('#oM').textContent='That code doesn’t match. Check your email and try again.';return}
+  var exp=Date.now()+(pending.remember?30*86400000:8*3600000);
+  try{localStorage.setItem('ctx_agent',JSON.stringify({name:pending.name,email:pending.email,role:'sales',exp:exp}))}catch(e){}
+  $('#verify').textContent='Signed in';location.href='ctx-advertising.html';
+}
+$('#verify').onclick=verify;
+$('#resend').onclick=function(){code=String(Math.floor(10000+Math.random()*90000));$('#demoC').textContent=code;boxes.forEach(function(b){b.value=''});boxes[0].focus();$('#oM').style.color='var(--ok)';$('#oM').textContent='New code sent.';setTimeout(function(){$('#oM').style.color='';$('#oM').textContent=''},2200)};
+$('#back').onclick=function(){clr();show(1)};
+$('#forgot').onclick=function(){clr();$('#rEmail').value=$('#email').value;$('#rOk').textContent='';show(3);$('#rEmail').focus()};
+$('#rBack').onclick=function(){clr();show(1)};
+$('#s3').addEventListener('submit',function(e){
+  e.preventDefault();clr();var em=$('#rEmail').value.trim();
+  if(!emailRe.test(em)){$('#rM').textContent='Enter your work email.';$('#rW').classList.add('bad');return}
+  $('#rOk').textContent='If '+em+' has an account, a reset link is on its way. Demo: nothing was sent.';
+});
+</script>

@@ -1,0 +1,328 @@
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trade-Ex Advertising</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: sales-agent portal. Header with next issue, then the open-spot map (a small newsletter with its banner spots),
+   booking form (spot, advertiser, banner upload, link, price) with an email preview at desktop and phone width,
+   then the agent's bookings. One banner size serves desktop and phone. Trade-Ex ink + gold. */
+:root{
+  --display:'Barlow Condensed','Arial Narrow',sans-serif; --body:'Barlow',system-ui,Arial,sans-serif;
+  --bg:#f4f5f7; --card:#fff; --ink:#14181f; --muted:#5d6675; --line:#e1e4ea; --gold:#f2a900; --tint:#fff3d0;
+  --ok:#14833b; --ok-bg:#e3f5e9; --warn:#a15c00; --warn-bg:#fff0d6; --err:#c4251a; --err-bg:#fdecea; --blue:#0c63c4; --blue-bg:#e3effc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+[hidden]{display:none!important}
+.top{background:var(--ink);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.top b{font-family:var(--display);font-size:22px;letter-spacing:.5px}.top small{color:#aeb4be}
+.top .sp{flex:1}
+.who{display:flex;align-items:center;gap:8px;font-size:14px;color:#dbe0e8}
+.out{border:1px solid #4a5160;background:none;color:#dbe0e8;border-radius:8px;padding:5px 11px;font-size:13.5px;font-weight:600;cursor:pointer;margin-left:4px}
+.who i{width:28px;height:28px;border-radius:50%;background:var(--gold);color:#1a1205;display:grid;place-items:center;font-style:normal;font-weight:800}
+.pill{border-radius:999px;padding:2px 10px;font-size:12.5px;font-weight:700;display:inline-block}
+.pill.open{background:var(--ok-bg);color:var(--ok)}.pill.booked{background:var(--bg);color:var(--muted)}.pill.mine{background:var(--blue-bg);color:var(--blue)}.pill.cond{background:var(--warn-bg);color:var(--warn)}.pill.wait{background:var(--warn-bg);color:var(--warn)}
+.wrap{max-width:1180px;margin:0 auto;padding:16px;display:grid;gap:16px}
+@media(min-width:960px){.main{display:grid;grid-template-columns:360px 1fr;gap:16px;align-items:start}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;min-width:0}
+.panel h2{font-family:var(--display);font-size:28px;font-weight:800;margin:0;line-height:1}
+.lead{margin:4px 0 12px;color:var(--muted)}
+.issue{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.issue .big{font-family:var(--display);font-size:44px;font-weight:800;line-height:1}
+.issue .meta{flex:1;min-width:200px}
+.kv{display:flex;gap:18px;flex-wrap:wrap;font-size:14.5px;color:var(--muted)}.kv b{color:var(--ink)}
+.alert{background:var(--ok-bg);color:var(--ok);border-radius:12px;padding:10px 14px;font-weight:700;margin-top:12px}
+/* spot map */
+.map{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.spot{border:2px solid var(--line);border-radius:12px;background:#fff;padding:10px 12px;display:flex;gap:10px;align-items:center;text-align:left;cursor:pointer;width:100%}
+.spot .nm{flex:1;min-width:0}.spot b{display:block;font-size:15.5px}.spot small{color:var(--muted);font-size:13px}
+.spot.open{border-color:var(--ok);border-style:dashed;background:#f6fcf8}
+.spot[aria-pressed="true"]{box-shadow:0 0 0 3px var(--tint);border-color:var(--ink);border-style:solid}
+.spot[disabled]{cursor:default;background:var(--bg)}
+.stories{border:1.5px solid var(--line);border-radius:10px;background:var(--bg);padding:8px 12px;font-size:13.5px;color:var(--muted);display:flex;justify-content:space-between}
+.spec{margin:0;padding:0;list-style:none;display:grid;gap:6px;font-size:14px}
+.spec li{display:flex;gap:8px}.spec b{flex:none;width:96px;color:var(--muted);font-weight:600}
+/* form */
+.fld{margin-bottom:12px}.fld label{display:flex;justify-content:space-between;gap:8px;font-size:13px;font-weight:700;color:#3a4252;margin-bottom:3px}
+.fld input,.fld select,.fld textarea{width:100%;border:1.5px solid var(--line);border-radius:9px;padding:9px 11px;background:#fff;font-size:15px}
+.fld input.bad{border-color:var(--err)}
+.two{display:grid;gap:10px;grid-template-columns:1fr 1fr}
+@media(max-width:520px){.two{grid-template-columns:1fr}}
+.hint{font-size:13px;color:var(--muted);margin:3px 0 0}.err{font-size:13px;color:var(--err);margin:3px 0 0}
+.btn{border:0;border-radius:11px;background:var(--gold);color:#1a1205;font-family:var(--display);font-weight:800;font-size:18px;letter-spacing:.5px;text-transform:uppercase;padding:11px 18px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;justify-content:center}
+.btn.dark{background:var(--ink);color:#fff}.btn.ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink)}.btn.sm{font-size:15px;padding:7px 12px;border-radius:9px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.drop{border:2px dashed #b8bfcb;border-radius:14px;padding:16px;text-align:center;background:var(--bg);cursor:pointer;display:block}
+.drop.has{border-style:solid;border-color:var(--ok);background:#fff;padding:8px}
+.drop img{display:block;width:100%;aspect-ratio:3/1;object-fit:cover;border-radius:8px}
+.drop span{display:block;font-weight:700}
+.chk{font-size:14px;margin-top:6px}.chk.ok{color:var(--ok)}.chk.bad{color:var(--err)}.chk.warn{color:var(--warn)}
+/* email preview */
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:#fff;padding:6px 13px;font-weight:600;font-size:14px;cursor:pointer}.seg button+button{border-left:1.5px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.stage{background:#e9ebf0;border-radius:12px;padding:14px 8px;display:flex;justify-content:center;overflow-x:auto}
+.mail{background:#fff;font-family:Arial,Helvetica,sans-serif;color:#222;max-width:100%}
+.mail .mh{background:#14181f;color:#fff;padding:12px;text-align:center;font-family:var(--display);font-size:22px;font-weight:800;letter-spacing:1px}
+.mail .ph{padding:12px 16px;border-top:1px solid #eee}
+.mail .ph i{display:block;height:10px;background:#e6e8ec;border-radius:3px;margin:6px 0}
+.mail .ph i.t{width:70%;height:14px;background:#cfd3da}
+.adslot{margin:12px 0;text-align:center;position:relative}
+.adslot .lab{font-size:10px;letter-spacing:1px;color:#8a919c;text-transform:uppercase;margin-bottom:3px}
+.adslot img{display:block;width:100%;height:auto}
+.adslot .safe{position:absolute;left:10%;right:10%;top:18%;bottom:6%;border:1.5px dashed #f2a900;pointer-events:none}
+.adslot .ph3{aspect-ratio:3/1;background:repeating-linear-gradient(45deg,#eceef2,#eceef2 8px,#f6f7f9 8px,#f6f7f9 16px);display:grid;place-items:center;color:#8a919c;font-weight:700;font-size:13px}
+/* availability grid */
+.grid th,.grid td{padding:7px 6px;white-space:nowrap}
+.grid tr.cur td{background:#fffaf0}
+.gi{border:0;background:none;font-weight:800;cursor:pointer;padding:2px 0;text-decoration:underline;text-underline-offset:3px;font-family:var(--body)}
+.cell{display:inline-block;border-radius:8px;padding:5px 10px;font-size:13.5px;font-weight:700}
+.cell.open{border:1.5px dashed var(--ok);background:#f6fcf8;color:var(--ok);cursor:pointer}
+.cell.open:hover{background:var(--ok-bg)}
+.cell.booked{background:var(--bg);color:var(--muted);font-weight:600}
+.cell.mine{background:var(--blue-bg);color:var(--blue)}
+/* bookings */
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th,td{text-align:left;padding:9px 8px;border-top:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-top:0}
+.tw{overflow-x:auto}
+.scrim{position:fixed;inset:0;background:rgba(8,10,14,.6);z-index:50;display:none;align-items:flex-end;justify-content:center}
+.scrim.show{display:flex}
+.sheet{background:#fff;width:100%;max-width:640px;max-height:92%;overflow:auto;border-radius:22px 22px 0 0;padding:18px 18px calc(20px + env(safe-area-inset-bottom,0px))}
+@media(min-width:700px){.scrim{align-items:center}.sheet{border-radius:22px}}
+.sheet .x{float:right;border:0;background:var(--bg);width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer}
+.email{border:1.5px solid var(--line);border-radius:12px;padding:12px;font-size:14.5px;background:#fafbfc}
+.email .row{display:flex;gap:8px;padding:3px 0}.email .row b{flex:none;width:70px;color:var(--muted);font-weight:600}
+.timeline{display:flex;gap:6px;flex-wrap:wrap;font-size:13px;margin-top:8px}
+.timeline span{border-radius:999px;padding:3px 10px;background:var(--bg);color:var(--muted);font-weight:600}.timeline span.on{background:var(--ok-bg);color:var(--ok)}
+.demo{font-size:12.5px;color:#6b4c00;background:#fff6dd;border:1px dashed #b87f00;border-radius:9px;padding:6px 10px;margin-top:10px}
+</style>
+
+<div class="top"><b>TRADE-EX</b><small>Advertising · sales agents</small><span class="sp"></span><div class="who"><i id="whoI">J</i><span id="whoN">Jordan P. · Sales agent</span><button class="out" id="signout" type="button">Sign out</button></div></div>
+
+<div class="wrap">
+  <section class="panel">
+    <div class="issue">
+      <div><div class="big" id="issueNo"></div></div>
+      <div class="meta"><div class="kv" id="issueMeta"></div><div class="alert" id="openAlert"></div></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Next 12 newsletters</h2>
+    <p class="lead">Book any issue ahead of time. Tap an open spot to book it. The list rolls forward each time an issue is sent, so you always see the next 12.</p>
+    <div class="tw"><table class="grid" id="grid"><thead><tr><th>Issue</th><th>Sends (morning)</th><th>Book by</th><th>Top banner</th><th>After story 3</th><th>After story 6 <small style="text-transform:none;letter-spacing:0">(9-story issues)</small></th><th>Bottom banner</th></tr></thead><tbody id="gridRows"></tbody></table></div>
+  </section>
+
+  <div class="main">
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <section class="panel">
+        <h2>Banner spots</h2>
+        <p class="lead">Pick an open spot to book it. Spots are fixed: the newsletter always has a top banner, one after story 3, one after story 6 when the issue has 9 stories, and one at the bottom.</p>
+        <div class="map" id="map"></div>
+      </section>
+      <section class="panel">
+        <h2>Banner size</h2>
+        <p class="lead">One image works on desktop and phone.</p>
+        <ul class="spec">
+          <li><b>Size</b><span><strong>1200 × 400 px</strong> (3 to 1)</span></li>
+          <li><b>Shows at</b><span>600 px wide on desktop, scales down to about 320 px on a phone</span></li>
+          <li><b>File</b><span>JPG, PNG or GIF, under 500 KB</span></li>
+          <li><b>Design tip</b><span>Keep text large and inside the centre 80%. On a phone the banner is about 107 px tall.</span></li>
+        </ul>
+      </section>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+      <section class="panel" id="formPanel">
+        <h2 id="fT">Book a spot</h2>
+        <p class="lead" id="fL">Choose an open spot on the left.</p>
+        <form id="form" novalidate hidden>
+          <div class="two">
+            <div class="fld"><label for="adv">Advertiser</label><input id="adv" placeholder="Company name"></div>
+            <div class="fld"><label for="con">Contact email</label><input id="con" type="email" placeholder="name@company.com"></div>
+          </div>
+          <div class="fld"><label for="cam">Campaign name</label><input id="cam" placeholder="e.g. Winter fleet service"></div>
+          <div class="fld"><label>Banner image <span class="cnt" id="imgSt"></span></label>
+            <label class="drop" id="drop" for="file"><span>Upload banner</span><small class="hint">1200 × 400 px, JPG, PNG or GIF</small><input id="file" type="file" accept="image/png,image/jpeg,image/gif" hidden></label>
+            <div class="chk" id="imgChk" role="status"></div>
+            <div id="fitRow" hidden style="margin-top:6px"><button type="button" class="btn sm dark" id="fit">Fit to 1200 × 400 (centre crop)</button></div>
+          </div>
+          <div class="fld"><label for="url">Where the banner links <span class="hint" style="margin:0">https://</span></label><input id="url" inputmode="url" placeholder="https://advertiser.com/offer"><div class="err" id="urlE"></div><p class="hint" id="urlF"></p></div>
+          <div class="two">
+            <div class="fld"><label for="price">Price (before tax)</label><input id="price" inputmode="decimal"><p class="hint">Example rate card. Admin confirms the final amount.</p></div>
+            <div class="fld"><label for="notes">Notes for admin</label><input id="notes" placeholder="Optional"></div>
+          </div>
+          <div class="acts" style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" id="book" type="submit">Book spot and send invoice to admin</button><button class="btn ghost" id="cancel" type="button">Cancel</button></div>
+          <div class="err" id="formE" style="margin-top:8px"></div>
+        </form>
+      </section>
+
+      <section class="panel" id="prevPanel" hidden>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px"><h2 style="font-size:24px">Preview in the newsletter</h2>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><div class="seg" role="group" aria-label="Width"><button id="wD" aria-pressed="true">Desktop 600</button><button id="wM" aria-pressed="false">Phone 320</button></div>
+          <label style="font-size:13.5px;display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="safe"> Safe area</label></div></div>
+        <div class="stage"><div id="frame" style="width:600px;max-width:100%"></div></div>
+      </section>
+
+      <section class="panel">
+        <h2>My bookings</h2>
+        <div class="tw"><table><thead><tr><th>Issue</th><th>Sends</th><th>Spot</th><th>Advertiser</th><th>Amount</th><th>Status</th></tr></thead><tbody id="rows"></tbody></table></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="dT">
+  <button class="x" id="dX" type="button" aria-label="Close">✕</button>
+  <h2 id="dT" style="font-family:var(--display);font-size:28px;margin:0">Booked. Invoice request sent.</h2>
+  <p style="color:var(--muted);margin:4px 0 12px" id="dP"></p>
+  <div class="email" id="dMail"></div>
+  <div class="timeline" id="dTl"></div>
+  <div class="demo">Demo only. Nothing is sent or charged. The live build emails this to the admin and puts the booking in the admin platform.</div>
+  <div style="margin-top:12px"><button class="btn" id="dDone" type="button">Done</button></div>
+</div></div>
+
+<script>
+/* Mockup. Live build: the spot map, bookings and statuses come from the admin platform; the uploaded banner is stored and
+   attached to the invoice request emailed to the admin; the newsletter builder's "Add advertisers" step then lists only
+   booked, paid campaigns for the issue. Names, prices and dates are placeholders. */
+/* Sign-in gate. Live build: the server checks the session. Here a saved sign-in is required when storage works. */
+var AG=null;try{AG=JSON.parse(localStorage.getItem('ctx_agent')||'null');if(AG&&AG.exp&&Date.now()>AG.exp)AG=null}catch(e){AG=undefined}
+if(AG===null){location.replace('ctx-advertising-login.html')}
+if(AG){document.getElementById('whoN').textContent=AG.name+' · Sales agent';document.getElementById('whoI').textContent=AG.name[0]}
+document.getElementById('signout').onclick=function(){try{localStorage.removeItem('ctx_agent')}catch(e){}location.href='ctx-advertising-login.html'};
+/* Weekly issues, every Thursday. TODAY is fixed here so the demo stays the same; the live build uses the real date. */
+var TODAY=new Date(2026,9,21),FIRST_NO=15,FIRST_SEND=new Date(2026,9,29),CADENCE=7,DEADLINE_DAYS=2; /* book by Tuesday, sends Thursday morning */
+var SPOT_DEFS=[
+ {id:"top",name:"Top banner",where:"Above the first story",price:600},
+ {id:"s3",name:"After story 3",where:"Between stories 3 and 4",price:450},
+ {id:"s6",name:"After story 6",where:"Only runs when the issue has 9 stories",price:400,cond:true},
+ {id:"bot",name:"Bottom banner",where:"Below the last story, above the footer",price:350}
+];
+var SEED={15:{top:"Northforge Drilling",s3:"GuardLine Safety",s6:"Voltec Mine Electrical"},16:{top:"Boreal Heavy Equipment",s3:"ClearWater Environmental"},17:{top:"Nighthawk Lubricants"},18:{top:"SignalPost Mine Comms",bot:"Lakehead Energy Services"},19:{top:"DeepVent Mine Air"},21:{s3:"RockShield Ground Control"},23:{top:"OreFlow Processing"}};
+var ISSUES=[];
+for(var i=0;i<12;i++){var d=new Date(FIRST_SEND.getFullYear(),FIRST_SEND.getMonth(),FIRST_SEND.getDate()+i*CADENCE),no=FIRST_NO+i,sp=SPOT_DEFS.map(function(def){var by=(SEED[no]||{})[def.id];return {id:def.id,name:def.name,where:def.where,price:def.price,cond:def.cond,state:by?"booked":"open",by:by||""}});
+  ISSUES.push({no:no,date:d,deadline:new Date(d.getFullYear(),d.getMonth(),d.getDate()-DEADLINE_DAYS),spots:sp})}
+var ISSUE=FIRST_NO,SPOTS=ISSUES[0].spots;
+var DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fdate(d){return DN[d.getDay()]+' '+MN[d.getMonth()]+' '+d.getDate()}
+function curIssue(){return ISSUES.filter(function(x){return x.no===ISSUE})[0]}
+function setIssue(no){ISSUE=no;SPOTS=curIssue().spots;sel=null;if(!$('#form').hidden)resetForm();paintIssue();paintMap();paintGrid()}
+var BOOKINGS=[
+ {issue:14,spot:"Top banner",adv:"Boreal Heavy Equipment",amt:600,status:"Paid"},
+ {issue:14,spot:"Bottom banner",adv:"Nighthawk Lubricants",amt:350,status:"Paid"},
+ {issue:15,spot:"Top banner",adv:"Northforge Drilling",amt:600,status:"Invoice sent to admin"},
+ {issue:16,spot:"Top banner",adv:"Boreal Heavy Equipment",amt:600,status:"Invoice sent to admin"}
+];
+var $=function(s){return document.querySelector(s)};
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function money(n){return '$'+Number(n).toLocaleString('en-CA',{minimumFractionDigits:2,maximumFractionDigits:2})}
+var sel=null,img=null,imgOk=false,dim=null,w=600;
+
+function paintIssue(){
+  var is=curIssue(),open=is.spots.filter(function(s){return s.state==="open"&&(!s.cond||true)}).length;
+  $('#issueNo').textContent='Issue '+is.no;
+  $('#issueMeta').innerHTML='<span>Sends <b>'+fdate(is.date)+', morning</b></span><span>Book by <b>'+fdate(is.deadline)+'</b></span><span>Audience <b>CME · CEN-CAN · MLO · Magazine · CTX</b></span>';
+  $('#openAlert').textContent=open?open+' spot'+(open>1?'s':'')+' open for Issue '+is.no:'Issue '+is.no+' is sold out';
+  $('#openAlert').style.background=open?'':'var(--bg)';$('#openAlert').style.color=open?'':'var(--muted)';
+}
+function paintGrid(){
+  $('#gridRows').innerHTML=ISSUES.map(function(is){
+    var open=is.spots.filter(function(x){return x.state==="open"}).length;
+    return '<tr class="'+(is.no===ISSUE?'cur':'')+'"><td><button class="gi" data-issue="'+is.no+'">Issue '+is.no+'</button></td><td>'+fdate(is.date)+'</td><td>'+fdate(is.deadline)+'</td>'+is.spots.map(function(sp){
+      var o=sp.state==="open",m=sp.state==="mine";
+      return '<td>'+(o?'<button class="cell open" data-book="'+is.no+'|'+sp.id+'" aria-label="Book '+sp.name+' in issue '+is.no+'">Open · '+money(sp.price)+'</button>':'<span class="cell '+(m?'mine':'booked')+'">'+(m?'You · ':'')+esc(sp.by)+'</span>')+'</td>'}).join('')+'</tr>'}).join('');
+}
+$('#gridRows').addEventListener('click',function(e){
+  var b=e.target.closest('[data-book]');if(b){var p=b.dataset.book.split('|');setIssue(+p[0]);pick(p[1]);return}
+  var g=e.target.closest('[data-issue]');if(g)setIssue(+g.dataset.issue);
+});
+function paintMap(){
+  var open=SPOTS.filter(function(s){return s.state==="open"}).length;
+  var h='';
+  h+=spotBtn(SPOTS[0])+'<div class="stories"><span>Stories 1 to 3</span><span>3 stories</span></div>'+spotBtn(SPOTS[1])+'<div class="stories"><span>Stories 4 to 6</span><span>3 stories</span></div>'+spotBtn(SPOTS[2])+'<div class="stories"><span>Stories 7 to 9</span><span>up to 3 stories</span></div>'+spotBtn(SPOTS[3]);
+  $('#map').innerHTML=h;
+}
+function spotBtn(s){
+  var isOpen=s.state==="open",mine=s.state==="mine";
+  return '<button class="spot '+(isOpen?'open':'')+'" data-spot="'+s.id+'" '+(isOpen?'':'disabled')+' aria-pressed="'+(sel===s.id)+'"><div class="nm"><b>'+s.name+'</b><small>'+s.where+'</small></div>'+
+   '<div style="text-align:right"><span class="pill '+(isOpen?'open':mine?'mine':'booked')+'">'+(isOpen?'Open':mine?'Booked by you':'Booked')+'</span><small style="display:block;color:var(--muted);margin-top:2px">'+(isOpen?money(s.price):esc(s.by||''))+'</small></div></button>';
+}
+function paintRows(){
+  $('#rows').innerHTML=BOOKINGS.slice().reverse().map(function(b){var cls=b.status==="Paid"?'open':'wait';var iss=ISSUES.filter(function(x){return x.no===b.issue})[0];return '<tr><td>'+b.issue+'</td><td>'+(iss?fdate(iss.date):'Sent')+'</td><td>'+esc(b.spot)+'</td><td>'+esc(b.adv)+'</td><td>'+money(b.amt)+'</td><td><span class="pill '+cls+'">'+esc(b.status)+'</span></td></tr>'}).join('');
+}
+function pick(id){
+  sel=id;var s=SPOTS.filter(function(x){return x.id===id})[0];
+  $('#form').hidden=false;$('#prevPanel').hidden=false;$('#fT').textContent='Book: '+s.name;$('#fL').textContent='Issue '+ISSUE+' · '+s.where+(s.cond?' · runs only if the issue has 9 stories':'');
+  $('#price').value=s.price.toFixed(2);paintMap();paintPrev();$('#formPanel').scrollIntoView({behavior:'smooth',block:'start'});$('#adv').focus();
+}
+$('#map').addEventListener('click',function(e){var b=e.target.closest('[data-spot]');if(b&&!b.disabled)pick(b.dataset.spot)});
+
+/* banner upload: must be 3:1, at least 1200 wide, under 500 KB */
+function checkImg(){
+  var c=$('#imgChk'),fit=$('#fitRow');fit.hidden=true;imgOk=false;
+  if(!dim){c.textContent='';$('#drop').className='drop';return}
+  var ratio=dim.w/dim.h,okRatio=Math.abs(ratio-3)<0.03,okW=dim.w>=1200,okKb=dim.kb<=500;
+  $('#drop').className='drop has';$('#drop').innerHTML='<img src="'+img+'" alt="Banner preview"><small class="hint">'+esc(dim.name||'banner')+' · click to replace</small><input id="file" type="file" accept="image/png,image/jpeg,image/gif" hidden>';
+  var msgs=[];
+  if(!okRatio){msgs.push('Size is '+dim.w+' × '+dim.h+'. The banner must be 3 to 1 (1200 × 400).');fit.hidden=false}
+  if(okRatio&&!okW)msgs.push('Too small: '+dim.w+' px wide. Needs at least 1200.');
+  if(!okKb)msgs.push('File is '+dim.kb+' KB. Keep it under 500 KB.');
+  if(msgs.length){c.className='chk bad';c.textContent='⚠ '+msgs.join(' ');$('#imgSt').textContent='';}
+  else{imgOk=true;c.className='chk ok';c.textContent='✓ '+dim.w+' × '+dim.h+', '+dim.kb+' KB. Good for desktop and phone.';$('#imgSt').textContent='✓'}
+}
+$('#fit').onclick=function(){
+  if(!dim)return;var cv=document.createElement('canvas');cv.width=1200;cv.height=400;var g=cv.getContext('2d'),sc=Math.max(1200/dim.w,400/dim.h),sw=1200/sc,sh=400/sc;
+  g.drawImage(dim.el,(dim.w-sw)/2,(dim.h-sh)/2,sw,sh,0,0,1200,400);
+  var url=cv.toDataURL('image/jpeg',0.85),im=new Image();im.onload=function(){img=url;dim={w:1200,h:400,kb:Math.round(url.length*0.75/1024),el:im,name:'banner-1200x400.jpg'};checkImg();paintPrev()};im.src=url;
+};
+function bindDrop(){document.addEventListener('change',function(e){if(e.target.id!=='file')return;var f=e.target.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){var im=new Image();im.onload=function(){img=rd.result;dim={w:im.naturalWidth,h:im.naturalHeight,kb:Math.round(f.size/1024),el:im,name:f.name};checkImg();paintPrev()};im.src=rd.result};rd.readAsDataURL(f);e.target.value=''},true)}
+bindDrop();
+
+/* link + tracking */
+function urlOk(u){try{var x=new URL(u);return x.protocol==="https:"}catch(e){return false}}
+function trackUrl(){var u=$('#url').value.trim();if(!urlOk(u))return '';var x=new URL(u);x.searchParams.set('utm_source','tradeex-newsletter');x.searchParams.set('utm_medium','email');x.searchParams.set('utm_campaign','issue-'+ISSUE);x.searchParams.set('utm_content',sel||'');return x.toString()}
+$('#url').addEventListener('input',function(){var u=this.value.trim();$('#urlE').textContent=u&&!urlOk(u)?'Enter a full link that starts with https://':'';this.classList.toggle('bad',!!(u&&!urlOk(u)));$('#urlF').textContent=urlOk(u)?'Clicks are tracked: ?utm_source=tradeex-newsletter&utm_campaign=issue-'+ISSUE+' is added.':''});
+
+/* preview in a newsletter, desktop or phone */
+function slotHtml(id,label){
+  var mine=id===sel;
+  return '<div class="adslot"><div class="lab">Advertisement</div>'+(mine&&img?'<img src="'+img+'" alt="Your banner"><div class="safe" style="display:'+($('#safe').checked?'block':'none')+'"></div>':'<div class="ph3">'+(mine?'Your banner appears here':label)+'</div>')+'</div>';
+}
+function paintPrev(){
+  if(!sel)return;
+  var ph='<div class="ph"><i class="t"></i><i></i><i></i><i style="width:60%"></i></div>';
+  $('#frame').innerHTML='<div class="mail"><div class="mh">CANADIAN TRADE-EX</div>'+slotHtml('top','Top banner')+ph+ph+ph+slotHtml('s3','After story 3')+ph+ph+ph+(SPOTS[2].cond?slotHtml('s6','After story 6'):'')+ph+slotHtml('bot','Bottom banner')+'<div class="ph" style="background:#f4f5f7;text-align:center;font-size:12px;color:#666">Unsubscribe · Manage preferences</div></div>';
+  $('#frame').style.width=w+'px';
+}
+$('#wD').onclick=function(){w=600;$('#wD').setAttribute('aria-pressed',true);$('#wM').setAttribute('aria-pressed',false);paintPrev()};
+$('#wM').onclick=function(){w=320;$('#wM').setAttribute('aria-pressed',true);$('#wD').setAttribute('aria-pressed',false);paintPrev()};
+$('#safe').onchange=paintPrev;
+
+/* submit: books the spot and sends the invoice request to the admin */
+$('#form').addEventListener('submit',function(e){
+  e.preventDefault();var err=[],s=SPOTS.filter(function(x){return x.id===sel})[0];
+  var adv=$('#adv').value.trim(),con=$('#con').value.trim(),cam=$('#cam').value.trim(),url=$('#url').value.trim(),price=parseFloat($('#price').value);
+  if(!adv)err.push('Advertiser name');if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(con))err.push('a valid contact email');if(!cam)err.push('Campaign name');
+  if(!imgOk)err.push('a banner image that passes the size check');if(!urlOk(url))err.push('a link that starts with https://');if(!(price>0))err.push('the price');
+  if(err.length){$('#formE').textContent='Still needed: '+err.join(', ')+'.';return}
+  $('#formE').textContent='';
+  s.state="mine";s.by=adv;BOOKINGS.push({issue:ISSUE,spot:s.name,adv:adv,amt:price,status:"Invoice sent to admin"});
+  var inv='INV-'+ISSUE+'-'+s.id.toUpperCase();
+  $('#dP').textContent=s.name+' in Issue '+ISSUE+' ('+fdate(curIssue().date)+') is held for '+adv+' until the admin confirms payment.';
+  $('#dMail').innerHTML='<div class="row"><b>To</b><span>Admin (invoicing)</span></div><div class="row"><b>From</b><span>Jordan P., Sales agent</span></div><div class="row"><b>Subject</b><span>Invoice request '+inv+': '+esc(adv)+', '+s.name+', Issue '+ISSUE+'</span></div><hr style="border:0;border-top:1px solid var(--line)">'+
+   '<div class="row"><b>Advertiser</b><span>'+esc(adv)+' · '+esc(con)+'</span></div><div class="row"><b>Campaign</b><span>'+esc(cam)+'</span></div><div class="row"><b>Spot</b><span>'+s.name+' · Issue '+ISSUE+' · sends '+fdate(curIssue().date)+' morning · book by '+fdate(curIssue().deadline)+'</span></div><div class="row"><b>Amount</b><span>'+money(price)+' before tax</span></div><div class="row"><b>Banner</b><span>1200 × 400 attached · links to '+esc(url)+'</span></div>'+($('#notes').value?'<div class="row"><b>Notes</b><span>'+esc($('#notes').value)+'</span></div>':'');
+  $('#dTl').innerHTML='<span class="on">Spot booked</span><span class="on">Invoice sent to admin</span><span>Admin sends invoice</span><span>Payment received</span><span>Banner added to the issue</span>';
+  $('#scrim').classList.add('show');
+});
+function resetForm(){reset()}
+function reset(){sel=null;img=null;dim=null;imgOk=false;$('#form').reset();$('#form').hidden=true;$('#prevPanel').hidden=true;$('#fT').textContent='Book a spot';$('#fL').textContent='Choose an open spot on the left.';$('#drop').className='drop';$('#drop').innerHTML='<span>Upload banner</span><small class="hint">1200 × 400 px, JPG, PNG or GIF</small><input id="file" type="file" accept="image/png,image/jpeg,image/gif" hidden>';$('#imgChk').textContent='';$('#urlF').textContent='';paintIssue();paintMap();paintRows();paintGrid()}
+$('#cancel').onclick=reset;
+function closeD(){$('#scrim').classList.remove('show');reset()}
+$('#dX').onclick=closeD;$('#dDone').onclick=closeD;$('#scrim').addEventListener('click',function(e){if(e.target.id==='scrim')closeD()});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&$('#scrim').classList.contains('show'))closeD()});
+paintIssue();paintMap();paintRows();paintGrid();
+</script>

@@ -1,0 +1,732 @@
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trade-Ex Newsletter Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: admin tool. Top bar + 5-step stepper (Select, Compile, Advertisers, Preview and approve, Send). Left = step work area,
+   right (desktop) = live issue summary and send checklist. Stacks to one column on a phone. Trade-Ex ink + gold. */
+:root{
+  --display:'Barlow Condensed','Arial Narrow',sans-serif; --body:'Barlow',system-ui,Arial,sans-serif;
+  --bg:#f4f5f7; --card:#ffffff; --ink:#14181f; --muted:#5d6675; --line:#e1e4ea; --gold:#f2a900; --gold-d:#8a6100; --tint:#fff3d0;
+  --ok:#14833b; --ok-bg:#e3f5e9; --warn:#a15c00; --warn-bg:#fff0d6; --err:#c4251a; --blue:#0c63c4; --blue-bg:#e3effc;
+  --feat:#7a4bd6; --conf:#c8102e; --mag:#0c63c4;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+[hidden]{display:none!important}
+.top{background:var(--ink);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.top b{font-family:var(--display);font-size:22px;letter-spacing:.5px}
+.top small{color:#aeb4be;font-size:13.5px}
+.top .sp{flex:1}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 11px;font-size:13px;font-weight:700}
+.pill.draft{background:var(--warn-bg);color:var(--warn)}
+.pill.appr{background:var(--ok-bg);color:var(--ok)}
+.pill.sent{background:var(--blue-bg);color:var(--blue)}
+.wrap{max-width:1180px;margin:0 auto;padding:16px}
+.stepper{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;margin-bottom:14px}
+.stepper::-webkit-scrollbar{display:none}
+.stepper button{flex:1 0 auto;min-width:130px;border:1.5px solid var(--line);background:var(--card);border-radius:12px;padding:9px 12px;text-align:left;cursor:pointer;display:flex;gap:9px;align-items:center}
+.stepper .n{width:26px;height:26px;border-radius:50%;background:var(--bg);display:grid;place-items:center;font-weight:800;font-size:13px;flex:none}
+.stepper b{display:block;font-size:14.5px;line-height:1.15}
+.stepper small{color:var(--muted);font-size:12.5px}
+.stepper button[aria-current="step"]{border-color:var(--ink);background:var(--ink);color:#fff}
+.stepper button[aria-current="step"] .n{background:var(--gold);color:#1a1205}
+.stepper button[aria-current="step"] small{color:#c7ccd4}
+.stepper button.done .n{background:var(--ok);color:#fff}
+.layout{display:grid;gap:16px}
+@media(min-width:900px){.layout{grid-template-columns:1fr 320px;align-items:start}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
+.panel h2{font-family:var(--display);font-size:28px;font-weight:800;margin:0;line-height:1}
+.panel p.lead{margin:4px 0 14px;color:var(--muted)}
+.side{display:flex;flex-direction:column;gap:12px;position:sticky;top:12px}
+.side h3{font-family:var(--display);font-size:19px;margin:0 0 8px;letter-spacing:.3px}
+.kv{display:flex;justify-content:space-between;gap:10px;font-size:14.5px;padding:5px 0;border-top:1px solid var(--line)}
+.kv:first-of-type{border-top:0}
+.chk{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:14.5px}
+.chk li{display:flex;gap:8px;align-items:flex-start}
+.chk i{flex:none;width:20px;height:20px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:800;color:#fff}
+.chk li.ok i{background:var(--ok);border-color:var(--ok)}
+.btn{border:0;border-radius:11px;background:var(--gold);color:#1a1205;font-family:var(--display);font-weight:800;font-size:18px;letter-spacing:.5px;text-transform:uppercase;padding:11px 18px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;justify-content:center}
+.btn.dark{background:var(--ink);color:#fff}
+.btn.ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.sm{font-size:15px;padding:7px 12px;border-radius:9px}
+.navrow{display:flex;justify-content:space-between;gap:10px;margin-top:16px;flex-wrap:wrap}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.tabs button{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;font-weight:600;font-size:14.5px;cursor:pointer;display:flex;gap:7px;align-items:center}
+.tabs button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.src-feat{background:var(--feat)}.src-conf{background:var(--conf)}.src-mag{background:var(--mag)}
+.story{display:grid;grid-template-columns:84px 1fr;gap:12px;border:1.5px solid var(--line);border-radius:14px;padding:10px;margin-bottom:10px;background:#fff}
+.story.sel{border-color:var(--ink);box-shadow:0 0 0 3px var(--tint)}
+.thumb{width:84px;height:84px;border-radius:10px;display:grid;place-items:center;color:#fff;font-family:var(--display);font-weight:800;font-size:13px;letter-spacing:.8px;text-align:center;position:relative;overflow:hidden}
+.thumb.v::after{content:"▶";position:absolute;inset:auto 6px 6px auto;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.6);display:grid;place-items:center;font-size:10px}
+.story h4{margin:0;font-size:16.5px;line-height:1.25}
+.story p{margin:3px 0 0;color:#4b5563;font-size:14.5px}
+.meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-bottom:3px}
+.tag{font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px}
+.badge{font-weight:700;border-radius:999px;padding:1px 9px;font-size:12px}
+.badge.need{background:var(--warn-bg);color:var(--warn)}
+.badge.ready{background:var(--ok-bg);color:var(--ok)}
+.acts{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:9px;overflow:hidden}
+.seg button{border:0;background:#fff;padding:5px 10px;font-size:13.5px;font-weight:600;cursor:pointer}
+.seg button+button{border-left:1.5px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.spin{width:15px;height:15px;border-radius:50%;border:3px solid currentColor;border-right-color:transparent;animation:rot .7s linear infinite;display:inline-block}
+@keyframes rot{to{transform:rotate(360deg)}}
+.row{display:flex;gap:10px;align-items:center;border:1.5px solid var(--line);border-radius:13px;padding:10px;margin-bottom:8px;background:#fff}
+.row .ord{display:flex;flex-direction:column;gap:2px}
+.row .ord button{border:1px solid var(--line);background:#fff;border-radius:6px;width:30px;height:24px;cursor:pointer;font-size:12px}
+.row .grow{flex:1;min-width:0}
+.row input,.fld input,.fld textarea,.fld select{width:100%;border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;background:#fff;font-size:15px}
+.row input{font-weight:600}
+.fld{margin-bottom:10px}.fld label{display:block;font-size:13px;font-weight:700;color:#3a4252;margin-bottom:3px}
+.slot{border:1.5px dashed var(--line);border-radius:14px;padding:12px;margin-bottom:12px}
+.slot h4{margin:0 0 8px;font-family:var(--display);font-size:20px;letter-spacing:.3px}
+.slot h4 small{font-family:var(--body);font-size:13px;color:var(--muted);font-weight:500;margin-left:6px}
+.ads{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+.ad{border:1.5px solid var(--line);border-radius:12px;padding:9px;cursor:pointer;background:#fff;text-align:left;display:flex;flex-direction:column;gap:6px}
+.ad[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 3px var(--tint)}
+.ad .pic{height:46px;border-radius:7px;display:grid;place-items:center;color:#fff;font-family:var(--display);font-weight:800;letter-spacing:.8px}
+.ad b{font-size:14.5px;line-height:1.2}.ad small{color:var(--muted);font-size:12.5px}
+.note{background:var(--blue-bg);color:#0b4a94;border-radius:10px;padding:9px 12px;font-size:14px;margin-bottom:12px}
+.warn{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:9px 12px;font-size:14px;margin-bottom:12px}
+.mail{max-width:600px;margin:0 auto;background:#fff;border:1px solid var(--line);font-family:Arial,Helvetica,sans-serif;color:#222}
+.mail .mh{background:#14181f;color:#fff;padding:18px 20px;text-align:center}
+.mail .mh b{font-family:var(--display);font-size:28px;letter-spacing:1px}.mail .mh small{display:block;color:#f2a900;letter-spacing:2px;font-size:11px;margin-top:2px}
+.mail .ad-b{margin:14px 20px;border:1px solid #ddd;padding:6px;text-align:center;font-size:12px;color:#666}
+.mail .ad-b .pic{height:70px;display:grid;place-items:center;color:#fff;font-family:var(--display);font-size:20px;font-weight:800;letter-spacing:1px;margin-bottom:4px}
+.mail .st{padding:0 0 22px;border-top:1px solid #eee}.mail .st>:not(.pic){margin-left:20px;margin-right:20px}.mail .st .pic{margin-bottom:14px}
+.mail .st .pic.missing{background:repeating-linear-gradient(45deg,#fdecea,#fdecea 8px,#fff 8px,#fff 16px);color:#c4251a;font-weight:700}.mail .st .pic{aspect-ratio:16/9;width:100%;display:grid;place-items:center;color:#fff;font-family:var(--display);font-size:22px;font-weight:800;margin-bottom:10px;position:relative}
+.mail .st .pic.v::after{content:"▶  Watch";position:absolute;background:rgba(0,0,0,.65);padding:6px 14px;border-radius:20px;font-size:14px;font-family:Arial;font-weight:700}
+.mail .st .k{font-size:11px;letter-spacing:1px;font-weight:800;text-transform:uppercase}
+.mail .st h5{margin:2px 0 6px;font-size:19px;line-height:1.25}
+.mail .st p{margin:0 0 6px;font-size:15px;line-height:1.5}
+.mail .st ul{margin:6px 0 8px 18px;padding:0;font-size:14.5px}
+.mail .st a.btnl{display:inline-block;background:#f2a900;color:#14181f;font-weight:700;font-size:15px;text-decoration:none;border-radius:6px;padding:11px 20px;margin-top:4px}
+.mail .mf{padding:16px 20px;background:#f4f5f7;font-size:12px;color:#666;text-align:center}
+.lists{display:grid;gap:8px}
+.lst{display:flex;gap:10px;align-items:center;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;background:#fff}
+.lst input{width:20px;height:20px;accent-color:var(--ink)}
+.lst b{flex:1}.lst span{color:var(--muted);font-variant-numeric:tabular-nums}
+.big{font-family:var(--display);font-size:40px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.sent-box{background:var(--ok-bg);border-radius:14px;padding:16px;margin-top:12px}
+.sent-box h3{margin:0 0 4px;font-family:var(--display);font-size:24px}
+.demo{font-size:12.5px;color:#6b4c00;background:#fff6dd;border:1px dashed var(--gold-d);border-radius:9px;padding:6px 10px;margin-top:10px}
+.thumb em{position:absolute;left:4px;bottom:4px;font-style:normal;font-family:var(--body);font-size:9.5px;letter-spacing:0;background:rgba(0,0,0,.55);padding:1px 5px;border-radius:4px;font-weight:600}
+.thumb{height:50px;width:89px}
+.thumb.noimg{background:repeating-linear-gradient(45deg,#eceef2,#eceef2 6px,#f6f7f9 6px,#f6f7f9 12px);color:var(--muted);border:1.5px dashed var(--line)}
+.thumb.noimg span{font-size:11px}
+.thumb.v::after{content:"▶";position:absolute;right:5px;top:5px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;display:grid;place-items:center;font-size:9px}
+.thumb.noimg.v::after{background:var(--conf)}
+.tabs{align-items:center}
+.clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.sortl{font-size:13.5px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.sortl select{border:1.5px solid var(--line);border-radius:9px;padding:5px 8px;background:#fff;font-size:14px}
+.story{grid-template-columns:89px 1fr}
+.lnk{font-size:13px;color:var(--blue);word-break:break-all}
+.tally{border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px;background:#fff}
+.tally .tt{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.tok{color:var(--ok);font-weight:700;font-size:14.5px}.twarn{color:var(--warn);font-weight:700;font-size:14.5px}
+.gauge{position:relative;height:10px;border-radius:5px;background:var(--bg);margin:10px 0 4px}
+.gauge i{display:block;height:100%;border-radius:5px;transition:width .25s}
+.gauge i.over{background:var(--err)}.gauge i.warn{background:var(--gold)}.tl{display:flex;flex-direction:column;gap:2px;margin-top:8px;font-size:13.5px;color:var(--muted)}.tl div{display:flex;justify-content:space-between;padding:3px 6px;border-radius:6px}.tl .cur{background:var(--tint);color:var(--ink);font-weight:700}.demochk{display:flex;gap:7px;align-items:center;font-size:13px;color:var(--muted);margin-top:8px}
+.gauge i.warn{background:var(--gold)}.gauge i.ok{background:var(--ok)}
+.gauge u{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+.gl{position:relative;height:16px;font-size:12px;color:var(--muted)}.gl span{position:absolute}
+.hop{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.chipb{border:1.5px solid var(--line);border-radius:999px;background:#fff;padding:4px 11px;font-size:13px;font-weight:700;cursor:pointer;margin:2px 0 8px;display:inline-block}
+.chipb.ok{color:var(--ok);border-color:#bfe3cb;background:var(--ok-bg)}
+.chipb.warn{color:var(--warn);border-color:#f0cf9a;background:var(--warn-bg)}
+.chipi{display:inline-block;font-size:13px;font-weight:700;color:var(--muted);background:var(--bg);border-radius:999px;padding:4px 11px;margin:2px 0 8px}
+.scrim{position:fixed;inset:0;background:rgba(8,10,14,.6);z-index:50;display:none;align-items:flex-end;justify-content:center}
+.scrim.show{display:flex}
+.sheet{background:#fff;width:100%;max-width:720px;max-height:92%;overflow:auto;border-radius:22px 22px 0 0;padding:18px 18px calc(20px + env(safe-area-inset-bottom,0px))}
+@media(min-width:760px){.scrim{align-items:center}.sheet{border-radius:22px}}
+.sheet .x{float:right;border:0;background:var(--bg);width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer}
+.cropgrid{display:grid;gap:16px;margin-top:12px}
+@media(min-width:760px){.cropgrid{grid-template-columns:1fr 1fr}}
+.lab{font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.src{position:relative;margin:0 auto;background:linear-gradient(135deg,#7a4bd6,#2a1260);border-radius:8px;overflow:hidden;touch-action:none;cursor:grab}
+.src .frame{position:absolute;border:3px solid var(--gold);box-shadow:0 0 0 999px rgba(0,0,0,.5);border-radius:3px;pointer-events:none}
+.subj{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;background:#fff;border:4px solid #14181f}
+.res{position:relative;width:100%;max-width:340px;aspect-ratio:16/9;overflow:hidden;border-radius:8px;background:#000}
+.res .inner{position:absolute;background:linear-gradient(135deg,#7a4bd6,#2a1260)}
+.cstat{font-size:14px;font-weight:700;margin-top:6px}
+.cstat.ok{color:var(--ok)}.cstat.bad{color:var(--err)}
+.clock{font-family:var(--display);font-size:18px;font-weight:800;color:#f2a900;font-variant-numeric:tabular-nums}
+body{overflow-x:hidden}
+.thumbwrap{position:relative;cursor:zoom-in;border-radius:10px;align-self:start}
+.thumbwrap .zoom{position:absolute;left:4px;top:4px;background:rgba(0,0,0,.6);color:#fff;font-size:10.5px;font-weight:700;border-radius:4px;padding:1px 6px;opacity:0;transition:opacity .15s}
+.thumbwrap:hover .zoom,.thumbwrap:focus-visible .zoom{opacity:1}
+.gridv{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.gcard{border:1.5px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;display:flex;flex-direction:column}
+.gcard.sel{border-color:var(--ink);box-shadow:0 0 0 3px var(--tint)}
+.gimg{cursor:zoom-in}
+.gp{aspect-ratio:16/9;width:100%;position:relative;display:grid;place-items:center}
+.gp.noimg{background:repeating-linear-gradient(45deg,#eceef2,#eceef2 6px,#f6f7f9 6px,#f6f7f9 12px);color:var(--muted);font-weight:700;font-size:12px;border-bottom:1.5px dashed var(--line)}
+.gp.v::after{content:"▶";position:absolute;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;display:grid;place-items:center;font-size:14px}
+.gp.noimg.v::after{background:var(--conf)}
+.gb{padding:10px;display:flex;flex-direction:column;gap:6px;flex:1}
+.gb h4{margin:0;font-size:15px;line-height:1.25}.gb .btn{margin-top:auto;align-self:flex-start}
+.lbox{background:#fff;width:100%;max-width:760px;max-height:94%;overflow:auto;border-radius:22px 22px 0 0;padding:14px 14px calc(16px + env(safe-area-inset-bottom,0px))}
+@media(min-width:760px){.lbox{border-radius:22px}}
+.lbox .x{float:right;border:0;background:var(--bg);width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;margin:0 0 8px 8px}
+.tray{position:sticky;top:0;z-index:6;background:#fff;border:1.5px solid var(--ink);border-radius:14px;padding:8px 10px;margin-bottom:12px;box-shadow:0 6px 16px rgba(20,24,31,.1)}
+.tray.empty{position:static;border:1.5px dashed var(--line);box-shadow:none;color:var(--muted);font-size:14.5px;padding:12px}
+.trayh{display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:6px}.trayh span{color:var(--muted);font-weight:600}
+.trayl{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.tchip{flex:none;display:flex;align-items:center;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);max-width:210px}
+.tchip .tp{border:0;background:none;display:flex;align-items:center;gap:7px;padding:4px 4px 4px 4px;cursor:pointer;min-width:0;text-align:left}
+.tth{flex:none;width:52px;height:29px;border-radius:5px;display:block;position:relative}
+.tth.noimg{background:#e1e4ea;display:grid;place-items:center;font-size:9px;font-weight:800;color:var(--muted)}
+.tt2{font-size:12.5px;line-height:1.2;max-height:30px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.tx{border:0;background:none;color:var(--muted);width:28px;align-self:stretch;cursor:pointer;font-size:13px}
+.scrim#lbScrim{z-index:50}.scrim#edScrim{z-index:55}.scrim#imgScrim{z-index:60}
+.iegrid{display:grid;gap:16px}
+@media(min-width:760px){.iegrid{grid-template-columns:1.3fr 1fr}}
+.crwrap{display:flex;flex-direction:column;align-items:center}
+.crstage{position:relative;background:#000;border-radius:8px;overflow:hidden;touch-action:none;user-select:none;max-width:100%}
+.crstage img{display:block;width:100%;height:100%;user-select:none;-webkit-user-drag:none}
+.crframe{position:absolute;border:2px solid #f2a900;box-shadow:0 0 0 999px rgba(0,0,0,.55);cursor:move;box-sizing:border-box}
+.crframe .h{position:absolute;width:22px;height:22px;background:#f2a900;border:3px solid #14181f;border-radius:50%;box-sizing:border-box;touch-action:none}
+.crframe .n{left:50%;top:-8px;margin-left:-20px;width:40px;height:14px;border-radius:7px;cursor:ns-resize}
+.crframe .s{left:50%;bottom:-8px;margin-left:-20px;width:40px;height:14px;border-radius:7px;cursor:ns-resize}
+.crframe .e{top:50%;right:-8px;margin-top:-20px;width:14px;height:40px;border-radius:7px;cursor:ew-resize}
+.crframe .w{top:50%;left:-8px;margin-top:-20px;width:14px;height:40px;border-radius:7px;cursor:ew-resize}
+#imgScrim.lock .crframe .n,#imgScrim.lock .crframe .s,#imgScrim.lock .crframe .e,#imgScrim.lock .crframe .w{display:none}
+.crframe .nw{left:-11px;top:-11px;cursor:nwse-resize}.crframe .ne{right:-11px;top:-11px;cursor:nesw-resize}
+.crframe .sw{left:-11px;bottom:-11px;cursor:nesw-resize}.crframe .se{right:-11px;bottom:-11px;cursor:nwse-resize}
+.aipanel{border:1.5px solid var(--line);border-radius:12px;padding:10px;margin-top:10px;background:var(--bg)}
+.aigrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.aithumb{border:2px solid var(--line);border-radius:8px;padding:0;overflow:hidden;cursor:pointer;background:#000;aspect-ratio:3/2}
+.aithumb:hover,.aithumb:focus-visible{border-color:var(--gold)}
+.aithumb img{width:100%;height:100%;object-fit:cover;display:block}
+.crout{width:100%;aspect-ratio:16/9;border-radius:10px;background:#000;display:block}
+.icv{width:100%;aspect-ratio:16/9;border-radius:10px;background:#000;touch-action:none;cursor:grab;display:block}
+.ctl .fld{margin-bottom:10px}
+.ctl input[type=range]{padding:0;accent-color:var(--ink)}
+.edsheet{max-width:1000px}
+.edgrid{display:grid;gap:16px;clear:both}
+@media(min-width:860px){.edgrid{grid-template-columns:1fr 1fr}}
+.edimg{aspect-ratio:16/9;width:100%;max-width:420px;border-radius:10px;position:relative;display:grid;place-items:center;text-align:center;background:var(--bg);overflow:hidden}
+.edimg.none{background:repeating-linear-gradient(45deg,#fdecea,#fdecea 8px,#fff 8px,#fff 16px);color:var(--err);font-weight:700;font-size:14px;padding:10px;border:1.5px dashed #f0b3ad}
+.edimg.v::after{content:"▶";position:absolute;width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;display:grid;place-items:center;font-size:16px}
+.fld{margin-bottom:11px}.fld label{display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:#3a4252;margin-bottom:3px}
+.fld input,.fld textarea{width:100%;border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;background:#fff;font-size:15px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hint{font-size:13px;color:var(--muted);margin:3px 0 0}
+.cnt{font-weight:600;color:var(--muted)}.cnt.over{color:var(--err)}.cnt.ok{color:var(--ok)}
+.lbcount{border-radius:999px;padding:6px 13px;font-size:14.5px;font-weight:600;background:var(--warn-bg);color:var(--warn);font-variant-numeric:tabular-nums}
+.lbcount b{font-family:var(--display);font-size:20px}
+.lbcount.ok{background:var(--ok-bg);color:var(--ok)}.lbcount.full{background:var(--ink);color:#fff}
+.lbstage{background:#e9ebf0;border-radius:12px;padding:14px 8px;display:flex;justify-content:center;overflow-x:auto;clear:both}.lbframe{max-width:100%;flex:none}
+.lbimg{clear:both;aspect-ratio:16/9;width:100%;border-radius:12px;position:relative;display:grid;place-items:center;overflow:hidden}
+.lbimg.v::after{content:"▶";position:absolute;width:60px;height:60px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;display:grid;place-items:center;font-size:22px}
+.lbimg.noimg{background:repeating-linear-gradient(45deg,#eceef2,#eceef2 8px,#f6f7f9 8px,#f6f7f9 16px);color:var(--muted);font-weight:700}
+.lbinfo h3{font-family:var(--display);font-size:24px;margin:8px 0 4px;line-height:1.1}
+.lbinfo p{margin:0 0 6px;color:#374151;font-size:15px}
+.lbinfo .spec2{font-size:13.5px;color:var(--muted)}
+@media(prefers-reduced-motion:reduce){.spin{animation-duration:2s}}
+</style>
+
+<div class="top">
+  <b>TRADE-EX</b><small>Newsletter builder · admin</small>
+  <span class="sp"></span>
+  <span class="pill draft" id="status">Draft</span>
+</div>
+
+<div class="wrap">
+  <div class="stepper" id="stepper" role="tablist"></div>
+  <div class="layout">
+    <section class="panel" id="work"></section>
+    <aside class="side">
+      <div class="panel"><h3>This issue</h3><div id="sum"></div></div>
+      <div class="panel"><h3>Time budget · 60 min</h3><div id="tm"></div></div>
+      <div class="panel"><h3>Before it can send</h3><ul class="chk" id="chk"></ul></div>
+    </aside>
+  </div>
+</div>
+
+<div class="scrim" id="edScrim"><div class="sheet edsheet" role="dialog" aria-modal="true" aria-labelledby="edH">
+  <button class="x" id="edX" type="button" aria-label="Close">✕</button>
+  <h3 id="edH" style="font-family:var(--display);font-size:26px;margin:0 0 10px">Edit story</h3>
+  <div class="edgrid">
+    <div id="edForm"></div>
+    <div><div class="lab">How it will look in the newsletter</div><div class="lbstage" style="padding:10px"><div class="lbframe" style="width:100%;max-width:600px"><div class="mail" id="edPrev"></div></div></div></div>
+  </div>
+  <div class="acts" style="margin-top:12px"><button class="btn" id="edDone" type="button">Done</button><span id="edMsg" style="font-size:13.5px;color:var(--muted)"></span></div>
+</div></div>
+<div class="scrim" id="imgScrim"><div class="sheet" style="max-width:900px" role="dialog" aria-modal="true" aria-labelledby="imT">
+  <button class="x" id="imX" type="button" aria-label="Close">✕</button>
+  <h3 id="imT" style="font-family:var(--display);font-size:26px;margin:0">Crop image</h3>
+  <p style="margin:2px 0 10px;color:var(--muted);font-size:14.5px" id="imSub"></p>
+  <div class="iegrid">
+    <div class="crwrap"><div class="crstage" id="crStage"><img id="crImg" alt="Image to crop" draggable="false"><div class="crframe" id="crFrame"><i class="h nw" data-h="nw"></i><i class="h ne" data-h="ne"></i><i class="h sw" data-h="sw"></i><i class="h se" data-h="se"></i><i class="h n" data-h="n"></i><i class="h s" data-h="s"></i><i class="h e" data-h="e"></i><i class="h w" data-h="w"></i></div></div>
+      <div style="font-size:13px;color:var(--muted);margin-top:8px;text-align:center">Drag the box to move it. Drag a side to change only the height or only the width. Drag a corner to change both.</div></div>
+    <div class="ctl">
+      <div class="lab" id="crLab">What goes in the newsletter</div>
+      <canvas id="crOut" class="crout" width="640" height="360" aria-label="Cropped result"></canvas><p class="hint" style="margin:4px 0 0">In the newsletter the picture is always the full width. Its height follows your crop (from square to a wide banner).</p>
+      <div class="cstat" id="iq"></div>
+      <label style="display:flex;gap:8px;align-items:center;font-size:14px;margin-top:8px;cursor:pointer"><input type="checkbox" id="crLock" style="width:18px;height:18px;accent-color:var(--ink)"> Keep the 16:9 shape</label><div class="acts" style="margin-top:10px"><label class="btn sm dark" style="cursor:pointer">Choose a different image…<input type="file" id="iFile" accept="image/*" hidden></label><button class="btn sm dark" id="iAI" type="button">Generate with AI…</button><button class="btn sm ghost" id="iRst" type="button">Reset crop</button><button class="btn sm ghost" id="iDef" type="button">Use default image</button></div>
+      <div id="aiPanel" class="aipanel" hidden>
+        <div class="lab">Generate an image</div>
+        <div class="fld"><label for="aiP">Describe the picture</label><textarea id="aiP" rows="3"></textarea></div>
+        <div class="two"><div class="fld"><label for="aiS">Style</label><select id="aiS"><option value="photo">Realistic photo</option><option value="illustration">Clean illustration</option></select></div><div class="fld"><label for="aiN">Options</label><select id="aiN"><option>3</option><option>2</option><option>1</option></select></div></div>
+        <button class="btn sm" id="aiGo" type="button">Generate</button> <span id="aiSt" style="font-size:13.5px;color:var(--muted)"></span>
+        <div class="aigrid" id="aiG"></div>
+        <p class="hint" id="aiNote"></p>
+      </div>
+      <div id="iMsg" style="font-size:13.5px;color:var(--muted);margin-top:8px"></div>
+    </div>
+  </div>
+  <div class="acts" style="margin-top:12px"><button class="btn" id="iUse" type="button">Use this crop</button><button class="btn ghost" id="iCancel" type="button">Cancel</button></div>
+</div></div>
+<div class="scrim" id="lbScrim"><div class="lbox" role="dialog" aria-modal="true" aria-label="Image preview">
+  <button class="x" id="lbX" type="button" aria-label="Close">✕</button>
+  <div class="acts" style="margin-bottom:8px"><span style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">How it will look in the newsletter</span><span style="flex:1"></span><div class="seg" role="group" aria-label="Preview width"><button id="lbD" aria-pressed="true">Desktop</button><button id="lbM" aria-pressed="false">Phone</button></div></div><div class="fld" style="margin-bottom:10px"><label for="lbTitle">Headline <span class="cnt" id="lbTc"></span></label><input id="lbTitle" autocomplete="off"></div><div class="lbstage"><div id="lbImg" class="lbframe"></div></div>
+  <div class="lbinfo" id="lbInfo"></div>
+  <div class="acts" style="margin-top:10px"><button class="btn ghost" id="lbPrev" type="button">← Previous</button><button class="btn ghost" id="lbNext" type="button">Next →</button><label class="btn ghost" style="cursor:pointer">Choose image…<input type="file" id="lbFile" accept="image/*" hidden></label><button class="btn ghost" id="lbImgEd" type="button">Crop image</button><button class="btn ghost" id="lbAI" type="button">Generate with AI…</button><span style="flex:1"></span><span class="lbcount" id="lbCount" aria-live="polite"></span><button class="btn" id="lbPick" type="button"></button></div>
+  <div style="font-size:12.5px;color:var(--muted);margin-top:8px">Tip: use the left and right arrow keys to flip through the hopper. Escape closes.</div>
+</div></div>
+
+<script>
+/* Mockup. Live build: stories come from three feeds (Featured Stories, Conferences, Magazine) and are normalised into one
+   story shape; ads come from the Advertising platform; the final audience is a Brevo list; sending calls the Brevo email
+   API only after an approved preview exists. Every number, story and ad below is placeholder data. */
+var MIN=6,MAX=9;
+var SRC={feat:{n:"Featured",c:"#7a4bd6"},conf:{n:"Conference",c:"#c8102e"}};
+/* One place: the Newsletter Hopper. Every story lands here and is normalised on arrival to
+   title, author, link back to the source, three lines of content, and one standard 1200x675 image (some stories have none).
+   Unselected stories are archived until the issue is published, then purged and a new hopper starts. */
+var TITLES=["Timmins gold mine expansion adds 400 jobs","New provincial grants for northern exploration","Battery metals supply chain takes shape in Sudbury","Ventilation on demand explained for new decline projects","Profile of a Timmins diamond drill crew","Sudbury supplier lands multi-year haulage contract","Underground automation: what operators learned in pilots","Northern colleges expand common-core mining training","Tailings closure: planning water treatment early","Junior explorers raise record funding this quarter","Electrification of mine fleets reaches the decline","Safety record: Ontario mines mark a milestone year","Rouyn-Noranda smelter upgrade moves to phase two","New rock-bolting rigs cut cycle times underground","Indigenous partnerships reshape project timelines","Mine communications: wi-fi mesh beats leaky feeder","Job Fair: companies hiring this fall","How core logging software is changing geology teams","Critical minerals strategy: what suppliers should know","Equipment rebuild market heats up in Northern Ontario"];
+var NEW_TITLES=["Dust control on haul roads: the cost of getting it wrong","Women in mining: three career paths from the field","Lithium exploration reaches the James Bay region","Training simulators move from classroom to site"];
+var AUTH=["Danielle Roy","Marc Lavoie","Priya Nair","Tom Beaulieu","Sandra Whitehorse","Chris Petrella","Jen McAllister","Luc Gagnon"];
+var L1=["A new announcement this week signals a shift for northern operators.","Industry leaders met in the region to outline the next phase of work.","Early results are in, and they point to measurable gains on site.","Employers across the region say the change is already under way."];
+var L2=["Project teams expect the first changes to show up within the next two quarters.","Suppliers and contractors are being asked to plan capacity ahead of the ramp-up.","The details include timelines, budgets and the roles that will be needed."];
+var L3=["Read the full story on Mining Life Online for the numbers and the people behind them.","Follow the link for the full report, quotes and what comes next.","More detail, including how to get involved, is in the full article."];
+var GR=["#7a4bd6,#3b1f78","#9b6ff0,#4f2d9c","#6a3fc8,#2c1666","#5a37b0,#25125e","#8458e0,#432086"];
+function mk(t,i,day,base){return {id:base+i,src:"feat",title:t,author:AUTH[(i+base)%AUTH.length],date:new Date(2026,9,day),url:"mininglifeonline.com/stories/"+(4100+base+i),
+  body:[L1[i%L1.length],L2[i%L2.length],L3[i%L3.length]].join(" "),img:(i%4!==2&&i%7!==3),g:GR[i%GR.length]}}
+var STORIES=TITLES.map(function(t,i){return mk(t,i,21-Math.floor(i/3),1)});
+/* Conference sessions are normalised from video to the same shape: title, speaker as author, link to the session, 3 lines. */
+STORIES.push({id:21,src:"conf",video:true,title:"Panel: Automating underground haulage",author:"CME 2026 panel",date:new Date(2026,9,19),url:"canadianminingexpo.com/sessions/haulage",
+  body:"Operators and OEMs compared autonomous haulage pilots, covering safety gains and connectivity limits. Pilots cut collision incidents by more than a third. Start with a single decline before a fleet-wide rollout.",img:true,g:"#c8102e,#5e0714"});
+STORIES.push({id:22,src:"conf",video:true,title:"Keynote: Mining’s talent gap and what fixes it",author:"CEN-CAN 2026 keynote",date:new Date(2026,9,17),url:"cencanexpo.ca/sessions/talent-gap",
+  body:"The keynote argues the sector needs apprenticeships, faster certification and a visible path for career changers. Common-core training shortens time to site. Job fairs convert best with named hiring leads.",img:true,g:"#e0364f,#7d0a1d"});
+STORIES.push({id:23,src:"conf",video:true,title:"Workshop: Water treatment for tailings closure",author:"CME 2026 workshop",date:new Date(2026,9,18),url:"canadianminingexpo.com/sessions/tailings",
+  body:"A hands-on session on closure planning: monitoring, treatment options and permitting timelines for northern sites. Plan treatment before closure, not after. Budget for ten years or more of care.",img:false,g:"#a30d24,#3f040f"});
+STORIES.push({id:24,src:"conf",video:true,title:"Fireside chat: Financing the next northern mine",author:"CEN-CAN 2026 session",date:new Date(2026,9,16),url:"cencanexpo.ca/sessions/financing",
+  body:"Investors and operators discuss what lenders now expect from northern projects. Permitting clarity moves deals faster. Community agreements are treated as a core risk factor.",img:false,g:"#b5162d,#4a0610"});
+var SAMPLE=[1,2,21,3,4,5,22,6,7,8]; /* 10 stories: 8 featured + 2 conference, 3 without an image */
+function fd(d){return d.toLocaleDateString('en-CA',{month:'short',day:'numeric'})}
+var ADS=[
+ {id:"a1",slot:"top",name:"Northforge Drilling — Spring demo days",adv:"Northforge Drilling",size:"600×120",g:"#14181f,#3a3f4b"},
+ {id:"a2",slot:"top",name:"GuardLine Safety — Winter PPE sale",adv:"GuardLine Safety",size:"600×120",g:"#c8102e,#7d0a1d"},
+ {id:"a3",slot:"top",name:"Boreal Equipment — Parts & service",adv:"Boreal Heavy Equipment",size:"600×120",g:"#b87f00,#6b4c00"},
+ {id:"b1",slot:"mid",name:"Voltec Electrical — Automation upgrades",adv:"Voltec Mine Electrical",size:"600×200",g:"#0c63c4,#06274d"},
+ {id:"b2",slot:"mid",name:"ClearWater — Closure planning",adv:"ClearWater Environmental",size:"600×200",g:"#14833b,#0b4a22"},
+ {id:"c1",slot:"foot",name:"CEN-CAN Expo — Register free",adv:"CEN-CAN Expo",size:"600×100",g:"#c8102e,#5e0714"},
+ {id:"c2",slot:"foot",name:"Canadian Mining Expo — Book a booth",adv:"Canadian Mining Expo",size:"600×100",g:"#f2a900,#8a6100"}
+];
+var SLOTS=[["top","Top banner","Above the first story"],["mid","Mid-issue","Between stories"],["foot","Footer","Above the sign-off"]];
+var LISTS=[["mlo","Mining Life Online",4210],["cme","Canadian Mining Expo",6830],["cencan","CEN-CAN Expo",5970],["mag","Magazine",3140],["ctx","Canadian Trade-Ex (CTX)",2260]];
+var STEPS=[["Hopper","Pick 6 to 9"],["Template","Order and edit"],["Advertisers","Fill ad slots"],["Preview","Review and approve"],["Send","Brevo list"]];
+var S={crop:{},imgOk:{},step:0,issue:14,flt:"all",sort:"new",purged:0,fresh:false,sel:[],edits:{},conv:{},busy:{},ads:{top:"a1",mid:"b1",foot:"c2"},approved:false,approver:"",lists:["cme","cencan"],sent:false,subject:"Northern Ontario mining news"};
+var $=function(s){return document.querySelector(s)};
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function story(id){return STORIES.filter(function(x){return x.id===id})[0]}
+function ready(id){var s=story(id);return s.ready||S.conv[id]}
+function ed(id,f){var e=S.edits[id];if(e&&e[f]!=null)return e[f];var st=story(id);return f==="title"?st.title:f==="sum"?st.body:f==="author"?st.author:f==="url"?st.url:f==="yt"?(st.yt||""):""}
+function ytId(u){var m=String(u||"").match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);return m?m[1]:null}
+function defImg(){var svg='<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675"><rect width="1200" height="675" fill="#14181f"/><rect y="560" width="1200" height="14" fill="#f2a900"/><text x="600" y="330" text-anchor="middle" font-family="Arial" font-weight="700" font-size="84" fill="#ffffff">CANADIAN TRADE-EX</text><text x="600" y="400" text-anchor="middle" font-family="Arial" font-size="34" letter-spacing="8" fill="#f2a900">MINING NEWS</text></svg>';return 'data:image/svg+xml;utf8,'+encodeURIComponent(svg)}
+function fmt(id){return S.edits[id]&&S.edits[id].fmt||story(id).fmt}
+function recips(){var raw=0;LISTS.forEach(function(l){if(S.lists.indexOf(l[0])>-1)raw+=l[2]});return {raw:raw,uniq:S.lists.length>1?Math.round(raw*0.78):raw}}
+/* Source image sizes as received from each feed. Everything is auto-cropped to 16:9 (1200x675) around the detected subject.
+   Only low-resolution or portrait images are flagged for a person. */
+var DIM=[[2400,1350,.5,.5],[1600,1200,.35,.45],[1200,1200,.6,.3],[1500,1000,.5,.5],[640,360,.5,.5],[2000,1333,.7,.5]];
+var DIMX={5:[800,1200,.5,.25],6:[640,360,.5,.5],8:[900,1350,.4,.3]};
+function dims(s){var d=DIMX[s.id]||(s.video?[1920,1080,.5,.5]:DIM[s.id%6]);return {w:d[0],h:d[1],sx:d[2],sy:d[3]}}
+function flag(s){if(S.imgOk[s.id])return null;if(!s.img)return 'No image yet: add one';var d=dims(s);if(d.w<1000)return 'Low resolution ('+d.w+' px wide)';if(d.h>d.w)return 'Portrait image: check the crop';return null}
+function imgsLeft(){return S.sel.map(story).filter(function(x){return flag(x)}).length}
+function allReady(){return S.sel.length>=MIN&&S.sel.length<=MAX}
+function checks(){return [
+  [S.sel.length>=MIN&&S.sel.length<=MAX,S.sel.length+" of "+MIN+"–"+MAX+" stories selected"],
+  [imgsLeft()===0,"Story images checked"+(imgsLeft()?" ("+imgsLeft()+" to fix)":"")],
+  [!!(S.ads.top||S.ads.mid||S.ads.foot),"Advertisers added from the ad platform"],
+  [S.approved,"Preview approved"+(S.approved?" by "+S.approver:"")],
+  [S.lists.length>0,"Audience chosen ("+recips().uniq.toLocaleString()+" people)"]
+]}
+function paintSide(){
+  if(typeof tick==='function'&&document.getElementById('tmS'))tick();
+  var r=recips(),ad=0;["top","mid","foot"].forEach(function(k){if(S.ads[k])ad++});
+  $('#sum').innerHTML='<div class="kv"><span>Issue</span><b>No. '+S.issue+'</b></div><div class="kv"><span>In hopper</span><b>'+STORIES.length+'</b></div><div class="kv"><span>Subject</span><b style="text-align:right">'+esc(S.subject)+'</b></div><div class="kv"><span>Stories added</span><b>'+S.sel.length+' <small style="color:var(--muted);font-weight:500">(target '+MIN+'–'+MAX+')</small></b></div><div class="kv"><span>Ad slots filled</span><b>'+ad+' of 3</b></div><div class="kv"><span>Archived until publish</span><b>'+(S.sent?0:Math.max(0,STORIES.length-S.sel.length))+'</b></div><div class="kv"><span>Recipients</span><b>'+r.uniq.toLocaleString()+'</b></div>';
+  $('#chk').innerHTML=checks().map(function(c){return '<li class="'+(c[0]?'ok':'')+'"><i>'+(c[0]?'✓':'')+'</i>'+esc(c[1])+'</li>'}).join('');
+  var st=$('#status');st.className='pill '+(S.sent?'sent':S.approved?'appr':'draft');st.textContent=S.sent?'Sent to Brevo':S.approved?'Approved':'Draft';
+  $('#stepper').innerHTML=STEPS.map(function(s,i){var d=(i===0&&S.sel.length)||(i===1&&S.sel.length&&allReady())||(i===2&&ad>0)||(i===3&&S.approved)||(i===4&&S.sent);
+    return '<button role="tab" data-i="'+i+'" class="'+(d&&i!==S.step?'done':'')+'" '+(i===S.step?'aria-current="step"':'')+'><span class="n">'+(d&&i!==S.step?'✓':i+1)+'</span><span><b>'+s[0]+'</b><small>'+s[1]+'</small></span></button>'}).join('');
+}
+function nav(back,next,nextLabel,nextOff){return '<div class="navrow"><button class="btn ghost" data-go="'+(S.step-1)+'" '+(back?'':'hidden')+'>← Back</button><button class="btn dark" data-go="'+(S.step+1)+'" '+(next?'':'hidden')+' '+(nextOff?'disabled':'')+'>'+nextLabel+' →</button></div>'}
+
+/* ---------- step 1 ---------- */
+function tally(){
+  var n=S.sel.length,pct=Math.min(100,n/MAX*100),st=n<MIN?'warn':'ok',msg=n<MIN?('Add '+(MIN-n)+' more to reach the minimum'):(n===MAX?'Maximum reached':'In range. You can add '+(MAX-n)+' more');
+  return '<div class="tally"><div class="tt"><div><span class="big">'+n+'</span> <span style="color:var(--muted)">stories added</span></div><div class="'+(st==='ok'?'tok':'twarn')+'">'+msg+'</div></div>'+
+   '<div class="gauge"><i style="width:'+pct+'%" class="'+st+'"></i><u style="left:'+(MIN/MAX*100)+'%"></u></div><div class="gl"><span>0</span><span style="left:'+(MIN/MAX*100)+'%">min '+MIN+'</span><span style="right:0">max '+MAX+'</span></div></div>';
+}
+/* Placeholder photo for a story: a landscape drawn per story. The live build uses the standardised 1200x675 image. */
+function pic(s){
+  var a=s.g.split(','),k=s.id%3,sh=[ 'M0 520 L200 380 L360 470 L560 300 L760 440 L940 340 L1200 470 V675 H0Z','M0 470 L260 330 L420 420 L700 250 L900 400 L1200 300 V675 H0Z','M0 540 L180 460 L380 520 L620 360 L820 470 L1020 380 L1200 450 V675 H0Z'][k];
+  var svg='<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+a[0]+'"/><stop offset="1" stop-color="'+a[1]+'"/></linearGradient></defs><rect width="1200" height="675" fill="url(#g)"/><circle cx="'+(220+s.id*37%700)+'" cy="170" r="70" fill="#fff" fill-opacity=".18"/><path d="'+sh+'" fill="#000" fill-opacity=".28"/><path d="'+sh.replace(/ L/g,' L').replace('V675','V675')+'" fill="#fff" fill-opacity=".06" transform="translate(0,-40)"/><rect x="'+(560+k*60)+'" y="250" width="14" height="140" fill="#fff" fill-opacity=".55"/><rect x="'+(530+k*60)+'" y="240" width="74" height="14" fill="#fff" fill-opacity=".55"/></svg>';
+  return 'data:image/svg+xml;utf8,'+encodeURIComponent(svg);
+}
+function bg(s){
+  var base="url('"+pic(s)+"') center/cover",y=ytId(ed(s.id,'yt'));
+  if(s.cust&&s.cust!=="default")return "url('"+s.cust+"') center/cover";
+  if(s.cust==="default")return "url('"+defImg()+"') center/cover";
+  if(y)return "url('https://img.youtube.com/vi/"+y+"/hqdefault.jpg') center/cover,"+base;
+  return base;
+}
+function hopperList(){return STORIES.filter(function(x){return S.flt==="all"||(S.flt==="sel"?S.sel.indexOf(x.id)>-1:cat(x)===S.flt)}).sort(function(a,b){return S.sort==="new"?b.date-a.date:a.date-b.date})}
+function cat(x){return x.video?(x.img?'vimg':'vno'):(x.img?'img':'no')}
+function thumb(s,w,h){return s.img?'<div class="thumb'+(s.video?' v':'')+'" style="'+(w?'width:'+w+'px;height:'+h+'px;font-size:11px;flex:none;':'')+'background:'+bg(s)+'"><span></span>'+(w?'':'<em>1200×675</em>')+'</div>':'<div class="thumb noimg'+(s.video?' v':'')+'" style="'+(w?'width:'+w+'px;height:'+h+'px;flex:none;':'')+'"><span>'+(s.video?'VIDEO · NO IMAGE':'NO IMAGE')+'</span></div>'}
+/* Your selection, always visible while you browse the hopper. Click a story to preview it, x to remove it. */
+function trayHtml(){
+  if(!S.sel.length)return '<div class="tray empty">Your selected stories appear here. Select '+MIN+' to '+MAX+'.</div>';
+  return '<div class="tray"><div class="trayh"><b>Your selection</b><span>'+S.sel.length+' of '+MIN+'–'+MAX+'</span></div><div class="trayl">'+S.sel.map(function(id){var s=story(id);
+    return '<div class="tchip"><button class="tp" data-prev="'+id+'" aria-label="Preview '+esc(s.title)+'">'+(s.img?'<span class="tth'+(s.video?' v':'')+'" style="background:'+bg(s)+'"></span>':'<span class="tth noimg">TXT</span>')+'<span class="tt2">'+esc(s.title)+'</span></button><button class="tx" data-rm1="'+id+'" aria-label="Remove '+esc(s.title)+'">✕</button></div>'}).join('')+'</div></div>';
+}
+function gridHtml(list){
+  return '<div class="gridv">'+list.map(function(s){var sel=S.sel.indexOf(s.id)>-1,full=!sel&&S.sel.length>=MAX;
+    return '<div class="gcard'+(sel?' sel':'')+'"><div class="gimg" data-prev="'+s.id+'" role="button" tabindex="0" aria-label="Preview image: '+esc(s.title)+'">'+(s.img?'<div class="gp'+(s.video?' v':'')+'" style="background:'+bg(s)+'"></div>':'<div class="gp noimg'+(s.video?' v':'')+'"><span>'+(s.video?'VIDEO · NO IMAGE':'NO IMAGE')+'</span></div>')+'</div>'+
+    '<div class="gb"><div class="meta"><span class="tag" style="background:'+SRC[s.src].c+'">'+SRC[s.src].n+'</span><span>'+fd(s.date)+'</span></div><h4>'+esc(s.title)+'</h4>'+
+    '<button class="btn sm '+(sel?'ghost':'')+'" data-pick="'+s.id+'" '+(full?'disabled':'')+'>'+(sel?'✓ Selected':'Select')+'</button></div></div>'}).join('')+'</div>';
+}
+function s1(){
+  var all=STORIES;
+  function n(k){return all.filter(function(x){return cat(x)===k}).length}
+  var list=hopperList();
+  var F=[["all","All",all.length],["sel","Selected",S.sel.length],["img","With images",n('img')],["no","No image",n('no')],["vimg","Video with image",n('vimg')],["vno","Video no image",n('vno')]];
+  return '<h2>Newsletter Hopper · Issue '+S.issue+'</h2><p class="lead">Every story lands here first and is normalised on arrival. Pick '+MIN+' to '+MAX+' for this issue.</p>'+
+  (S.fresh?'<div class="note">Issue '+S.issue+' hopper started. Last issue’s archive was purged. New stories are arriving.</div>':'')+
+  tally()+trayHtml()+
+  '<div class="acts" style="margin:-2px 0 12px"><button class="btn sm dark" id="suggest" type="button">Suggest a 7-story issue</button><span style="font-size:13.5px;color:var(--muted)">Newest stories with good images, two from conferences. Change anything you like.</span></div>'+
+  '<div class="tabs" role="group" aria-label="Filter">'+F.map(function(f){return '<button data-flt="'+f[0]+'" aria-pressed="'+(S.flt===f[0])+'">'+f[1]+' <b style="font-weight:800">'+f[2]+'</b></button>'}).join('')+
+  '<span style="flex:1"></span><div class="seg" role="group" aria-label="View"><button data-view="list" aria-pressed="'+(S.view!=="grid")+'">List</button><button data-view="grid" aria-pressed="'+(S.view==="grid")+'">Image grid</button></div><label class="sortl">Order <select id="so" aria-label="Order"><option value="new" '+(S.sort==="new"?'selected':'')+'>Newest first</option><option value="old" '+(S.sort==="old"?'selected':'')+'>Oldest first</option></select></label></div>'+
+  (list.length?'':'<div class="warn">No stories in this view yet.</div>')+
+  (S.view==="grid"?gridHtml(list):'')+(S.view==="grid"?[]:list).map(function(s){
+    var sel=S.sel.indexOf(s.id)>-1,full=!sel&&S.sel.length>=MAX;
+    return '<div class="story'+(sel?' sel':'')+'"><div class="thumbwrap" data-prev="'+s.id+'" role="button" tabindex="0" aria-label="Preview image: '+esc(s.title)+'">'+thumb(s)+'<span class="zoom">Preview</span></div><div>'+
+      '<div class="meta"><span class="tag" style="background:'+SRC[s.src].c+'">'+SRC[s.src].n+'</span><span>'+fd(s.date)+'</span><span>·</span><span>By '+esc(s.author)+'</span></div>'+
+      '<h4>'+esc(s.title)+'</h4><p class="clamp">'+esc(s.body)+'</p><div class="lnk">↗ '+esc(s.url)+'</div>'+
+      '<div class="acts"><button class="btn sm '+(sel?'ghost':'')+'" data-pick="'+s.id+'" '+(full?'disabled title="Maximum '+MAX+' stories"':'')+'>'+(sel?'✓ Selected · remove':'Select for newsletter')+'</button></div></div></div>'}).join('')+
+  '<div class="navrow"><span style="color:var(--muted);font-size:14px;align-self:center">'+(S.sel.length<MIN?'Select '+(MIN-S.sel.length)+' more to continue.':'Unselected stories are archived until you publish.')+'</span><button class="btn dark" data-go="1" '+(S.sel.length>=MIN&&S.sel.length<=MAX?'':'disabled')+'>Move to newsletter template →</button></div>';
+}
+/* ---------- step 2 ---------- */
+function imgChip(s){
+  var f=flag(s);
+  if(!s.img)return '<button class="chipb warn" data-edit="'+s.id+'">⚠ Needs an image · Add</button>';
+  return f?'<button class="chipb warn" data-crop="'+s.id+'">⚠ '+esc(f)+' · Fix</button>':'<button class="chipb ok" data-crop="'+s.id+'">✓ Auto-cropped 16:9 · Adjust</button>';
+}
+function s2(){
+  if(!S.sel.length) return '<h2>Newsletter template</h2><div class="warn">Select stories in the hopper first.</div>'+nav(true,false);
+  var arch=STORIES.length-S.sel.length;
+  return '<h2>Newsletter template</h2><p class="lead">Your '+S.sel.length+' stories are loaded into the template. Set the subject and the order. The 3-line content can be edited; author, date and the source link stay as published.</p>'+
+  '<div class="'+(imgsLeft()?'warn':'note')+'">Images: '+(S.sel.map(story).filter(function(x){return x.img}).length-imgsLeft())+' auto-checked and ready'+(imgsLeft()?', <b>'+imgsLeft()+' need a quick look</b> (low resolution or portrait)':'')+'. Everything is cropped to 1200×675 automatically.</div>'+
+  '<div class="note">'+arch+' unselected '+(arch===1?'story is':'stories are')+' archived. They stay available in the hopper until this issue is published, then they are purged.</div>'+tally()+
+  '<div class="fld"><label for="subj">Email subject</label><input id="subj" value="'+esc(S.subject)+'"></div>'+
+  S.sel.map(function(id,i){var s=story(id);
+    return '<div class="row" style="align-items:flex-start"><div class="ord"><button data-mv="'+i+'|-1" aria-label="Move up" '+(i?'':'disabled')+'>▲</button><button data-mv="'+i+'|1" aria-label="Move down" '+(i<S.sel.length-1?'':'disabled')+'>▼</button></div>'+
+    thumb(s,72,41)+
+    '<div class="grow"><div class="meta"><span class="tag" style="background:'+SRC[s.src].c+'">'+SRC[s.src].n+'</span><span>'+fd(s.date)+'</span><span>·</span><span>By '+esc(s.author)+'</span></div>'+
+    imgChip(s)+'<div class="fld" style="margin-bottom:6px"><input data-ed="'+id+'|title" value="'+esc(ed(id,"title"))+'" aria-label="Headline"></div>'+
+    '<div class="fld" style="margin-bottom:6px"><textarea rows="3" data-ed="'+id+'|sum" aria-label="Three lines of content">'+esc(ed(id,"sum"))+'</textarea></div>'+
+    '<div class="acts"><span class="lnk">↗ '+esc(ytId(ed(id,'yt'))?ed(id,'yt'):ed(id,'url'))+'</span><button class="btn sm dark" data-edit="'+id+'">Edit story</button><button class="btn sm ghost" data-rm="'+id+'">Remove (to archive)</button></div></div></div>'}).join('')+nav(true,true,imgsLeft()?'Fix '+imgsLeft()+' image'+(imgsLeft()>1?'s':'')+' first':'Advertisers',!allReady()||imgsLeft()>0);
+}
+/* ---------- step 3 ---------- */
+function s3(){
+  return '<h2>Add advertisers</h2><p class="lead">Ads come from the Advertising platform. Choose one for each slot, or leave a slot empty.</p><div class="acts" style="margin-bottom:10px"><button class="btn sm dark" id="suggAds" type="button">Use suggested ads</button><span style="font-size:13.5px;color:var(--muted)">Picks the campaigns that are paid up and due for this issue.</span></div><div class="note">Showing placeholder campaigns. In the live build only active, paid campaigns for these dates appear.</div>'+
+  SLOTS.map(function(sl){return '<div class="slot"><h4>'+sl[1]+'<small>'+sl[2]+'</small></h4><div class="ads">'+
+    ADS.filter(function(a){return a.slot===sl[0]}).map(function(a){return '<button class="ad" data-ad="'+sl[0]+'|'+a.id+'" aria-pressed="'+(S.ads[sl[0]]===a.id)+'"><div class="pic" style="background:linear-gradient(135deg,'+a.g+')">'+esc(a.adv.split(' ')[0]).toUpperCase()+'</div><b>'+esc(a.name)+'</b><small>'+a.adv+' · '+a.size+'</small></button>'}).join('')+
+    '<button class="ad" data-ad="'+sl[0]+'|" aria-pressed="'+(!S.ads[sl[0]])+'"><div class="pic" style="background:var(--bg);color:var(--muted)">NONE</div><b>Leave empty</b><small>No ad in this slot</small></button></div></div>'}).join('')+nav(true,true,'Preview');
+}
+/* ---------- step 4 ---------- */
+function adHtml(k){var a=ADS.filter(function(x){return x.id===S.ads[k]})[0];if(!a)return '';return '<div class="ad-b"><div class="pic" style="background:linear-gradient(135deg,'+a.g+')">'+esc(a.adv.toUpperCase())+'</div>Advertisement · '+esc(a.name)+'</div>'}
+function storyHtml(id){
+  var s=story(id),sm=ed(id,'sum'),yt=ytId(ed(id,'yt')),vid=s.video||!!yt,href=yt?ed(id,'yt'):'https://'+ed(id,'url');
+  return '<div class="st">'+(s.img?'<a href="'+esc(href)+'" class="pic'+(vid?' v':'')+'" style="display:block;aspect-ratio:'+((s.cust&&s.cust!=="default"&&s.ar)?s.ar:16/9)+';background:'+bg(s)+'"></a>':'<div class="pic missing">Image needed</div>')+
+   '<div class="k" style="color:'+SRC[s.src].c+'">'+SRC[s.src].n+(vid?' · Video':'')+' <span style="color:#6b7280;font-weight:400">· '+fd(s.date)+' · By '+esc(ed(id,'author'))+'</span></div><h5>'+esc(ed(id,'title'))+'</h5><p>'+esc(sm)+'</p>'+
+   '<a href="'+esc(href)+'" class="btnl">'+(vid?'Watch the video':'Read the full story')+' →</a></div>';
+}
+function mailHtml(){
+  var ids=S.sample?SAMPLE:S.sel;
+  var out='<div class="mail"><div class="mh"><b>CANADIAN TRADE-EX</b><small>MINING NEWS</small></div>'+adHtml('top');
+  ids.forEach(function(id,i){
+    out+=storyHtml(id);
+    if(i===Math.floor(ids.length/2)-1||(ids.length===1&&i===0))out+=adHtml('mid');
+  });
+  return out+adHtml('foot')+'<div class="mf">You are receiving this because you joined a Trade-Ex list.<br>Unsubscribe · Manage preferences · Canadian Trade-Ex</div></div>';
+}
+function s4(){
+  if(!S.sel.length) return '<h2>Preview</h2><div class="warn">Add stories first.</div>'+nav(true,false);
+  return '<h2>Preview and approve</h2><p class="lead">This is exactly what Brevo will send. Approval unlocks sending.</p>'+
+  '<div class="acts" style="margin-bottom:10px"><div class="seg" role="group" aria-label="Preview content"><button id="useReal" aria-pressed="'+(!S.sample)+'">My issue ('+S.sel.length+' stories)</button><button id="useSample" aria-pressed="'+(!!S.sample)+'">Full sample (10 stories)</button></div></div>'+
+  (S.sample?'<div class="note">Sample only. It shows 10 stories (8 featured, 2 from conferences, 3 without an image) to see the full template. A real issue is capped at '+MAX+' stories.</div>':'')+
+  '<div style="overflow-x:auto;margin-bottom:14px">'+mailHtml()+'</div>'+
+  (allReady()?'':'<div class="warn">An issue needs '+MIN+' to '+MAX+' stories before it can be approved.</div>')+
+  '<div class="panel" style="background:var(--bg)"><div class="fld"><label for="appr">Approver name</label><input id="appr" value="'+esc(S.approver)+'" placeholder="Your name"></div>'+
+  '<label style="display:flex;gap:10px;align-items:flex-start;font-size:15px;cursor:pointer"><input type="checkbox" id="apc" style="width:20px;height:20px;accent-color:var(--ink);margin-top:2px" '+(S.approved?'checked':'')+'> I have reviewed this issue and approve it for sending.</label>'+
+  '<div class="acts" style="margin-top:12px"><button class="btn" id="approve" '+(allReady()?'':'disabled')+'>'+(S.approved?'Approved ✓':'Approve issue')+'</button><button class="btn ghost" id="testmail">Send me a test</button><span id="tmsg" style="font-size:14px;color:var(--ok)"></span></div></div>'+nav(true,true,'Send',!S.approved);
+}
+/* ---------- step 5 ---------- */
+function s5(){
+  var r=recips();
+  return '<h2>Send</h2><p class="lead">The approved issue is attached to the Brevo list and sent.</p>'+
+  (S.approved?'':'<div class="warn">Sending is locked until the preview is approved.</div>')+
+  '<div class="lists" role="group" aria-label="Audience">'+LISTS.map(function(l){return '<label class="lst"><input type="checkbox" data-list="'+l[0]+'" '+(S.lists.indexOf(l[0])>-1?'checked':'')+' '+(S.sent?'disabled':'')+'><b>'+l[1]+'</b><span>'+l[2].toLocaleString()+'</span></label>'}).join('')+'</div>'+
+  '<div style="margin:16px 0"><div class="big">'+r.uniq.toLocaleString()+'</div><div style="color:var(--muted);font-size:14.5px">unique recipients'+(S.lists.length>1?' after removing '+(r.raw-r.uniq).toLocaleString()+' duplicates (people on more than one list)':'')+'</div></div>'+
+  '<div class="acts"><button class="btn" id="sendNow" '+(S.approved&&S.lists.length&&!S.sent?'':'disabled')+'>'+(S.sent?'Sent':'Send via Brevo')+'</button></div>'+
+  (S.sent?'<div class="sent-box"><h3>Issue '+S.issue+' sent to Brevo</h3>Queued for '+r.uniq.toLocaleString()+' people. The archive of '+S.purged+' unselected stories has been purged. Unsubscribes sync back to the sign-up lists.<div class="acts" style="margin-top:10px"><button class="btn dark" id="nextIssue">Start Issue '+(S.issue+1)+' hopper</button></div></div>':'')+
+  '<div class="demo">Demo only. Nothing is sent. Counts and duplicate removal are placeholders.</div>'+nav(true,false);
+}
+function render(){
+  $('#work').innerHTML=[s1,s2,s3,s4,s5][S.step]();paintSide();
+}
+document.addEventListener('click',function(e){
+  var t=e.target.closest('button,[data-tab],[data-prev]');if(!t)return;var d=t.dataset;
+  if(d.edit){openEdit(+d.edit);return}
+  if(d.rm1){S.sel.splice(S.sel.indexOf(+d.rm1),1);S.approved=false;render();return}
+  if(d.prev){openLb(+d.prev);return}
+  if(d.view){S.view=d.view;render();return}
+  if(d.crop){openCrop(+d.crop);return}
+  if(t.id==="suggest"){suggest();return}
+  if(t.id==="suggAds"){S.ads={top:"a1",mid:"b1",foot:"c2"};S.approved=false;render();return}
+  if(d.i!=null){S.step=+d.i;render();window.scrollTo(0,0);return}
+  if(d.go!=null){S.step=+d.go;render();window.scrollTo(0,0);return}
+  if(d.flt){S.flt=d.flt;render();return}
+  if(d.pick){var id=+d.pick,i=S.sel.indexOf(id);if(i>-1)S.sel.splice(i,1);else if(S.sel.length<MAX)S.sel.push(id);S.approved=false;render();return}
+  if(d.conv){var id=+d.conv;S.busy[id]=true;render();setTimeout(function(){S.conv[id]=true;S.busy[id]=false;S.edits[id]=S.edits[id]||{};S.edits[id].fmt="hybrid";render()},1400);return}
+  if(d.mv){var p=d.mv.split('|'),i=+p[0],j=i+ +p[1];var x=S.sel[i];S.sel[i]=S.sel[j];S.sel[j]=x;S.approved=false;render();return}
+  if(d.rm){S.sel.splice(S.sel.indexOf(+d.rm),1);S.approved=false;render();return}
+  if(d.fmt){var p=d.fmt.split('|');S.edits[p[0]]=S.edits[p[0]]||{};S.edits[p[0]].fmt=p[1];S.approved=false;render();return}
+  if(d.ad){var p=d.ad.split('|');S.ads[p[0]]=p[1]||null;S.approved=false;render();return}
+  if(t.id==="approve"){S.approver=$('#appr').value.trim();if(!S.approver){$('#appr').focus();$('#appr').style.borderColor='var(--err)';return}S.approved=true;render();return}
+  if(t.id==="useSample"){S.sample=true;render();return}
+  if(t.id==="useReal"){S.sample=false;render();return}
+  if(t.id==="testmail"){$('#tmsg').textContent="Demo: a test would be sent to you. Nothing was sent.";return}
+  if(t.id==="sendNow"){S.purged=STORIES.length-S.sel.length;S.sent=true;render();return}
+  if(t.id==="nextIssue"){T.t0=Date.now();S.crop={};S.imgOk={};S.issue++;S.sel=[];S.edits={};S.approved=false;S.approver="";S.sent=false;S.purged=0;S.fresh=true;S.flt="all";S.step=0;
+    STORIES=NEW_TITLES.map(function(t,i){return mk(t,i,22,200)});render();window.scrollTo(0,0);return}
+});
+document.addEventListener('input',function(e){
+  var t=e.target;
+  if(t.id==="subj"){S.subject=t.value;S.approved=false;paintSide();return}
+  if(t.dataset.ed){var p=t.dataset.ed.split('|');S.edits[p[0]]=S.edits[p[0]]||{};S.edits[p[0]][p[1]]=t.value;S.approved=false;paintSide()}
+});
+document.addEventListener('change',function(e){
+  var t=e.target;
+  if(t.id==="apc"&&!t.checked){S.approved=false;render()}
+  if(t.id==="so"){S.sort=t.value;render()}
+  if(t.dataset.list){var i=S.lists.indexOf(t.dataset.list);if(t.checked&&i<0)S.lists.push(t.dataset.list);if(!t.checked&&i>-1)S.lists.splice(i,1);render()}
+});
+/* start in a realistic working state: a few stories picked */
+function suggest(){
+  var pool=STORIES.filter(function(x){return x.img&&!flag(x)}).sort(function(a,b){return b.date-a.date});
+  var conf=pool.filter(function(x){return x.src==="conf"}).slice(0,2),feat=pool.filter(function(x){return x.src!=="conf"}).slice(0,Math.max(0,7-conf.length));
+  S.sel=conf.concat(feat).sort(function(a,b){return b.date-a.date}).map(function(x){return x.id});S.approved=false;render();
+}
+/* ---- image preview (lightbox) over the current hopper view ---- */
+var LB=null,LW=600;
+function openLb(id){LB=id;paintLb();$('#lbScrim').classList.add('show')}
+function lbIds(){return hopperList().map(function(x){return x.id})}
+function paintLb(){
+  var st=story(LB),d=dims(st),ids=lbIds(),i=ids.indexOf(LB),sel=S.sel.indexOf(LB)>-1,f=flag(st);
+  $('#lbTitle').value=ed(LB,'title');lbTc();
+  $('#lbImg').innerHTML='<div class="mail">'+storyHtml(LB)+'</div>';$('#lbImg').style.width=LW+'px';
+  $('#lbInfo').innerHTML='<div class="spec2" style="margin-top:8px"><b>'+(i+1)+' of '+ids.length+'</b> in this view · '+(st.img?'Received '+d.w+'×'+d.h+', standardised to 1200×675. '+(f?'<b style="color:var(--warn)">⚠ '+esc(f)+'</b>':'<b style="color:var(--ok)">✓ Auto-cropped, no action needed</b>'):'No image was supplied with this story.')+'</div>';
+  var n=S.sel.length,cn=$('#lbCount');cn.innerHTML='<b>'+n+'</b> of '+MIN+'–'+MAX+' added';cn.className='lbcount '+(n<MIN?'low':(n>=MAX?'full':'ok'));
+  $('#lbPrev').disabled=i<=0;$('#lbNext').disabled=i>=ids.length-1;
+  var pk=$('#lbPick');pk.textContent=sel?'✓ Selected · remove':'Select for newsletter';pk.className='btn'+(sel?' ghost':'');pk.disabled=!sel&&S.sel.length>=MAX;
+}
+$('#lbD').onclick=function(){LW=600;$('#lbD').setAttribute('aria-pressed',true);$('#lbM').setAttribute('aria-pressed',false);if(LB!=null)paintLb()};
+$('#lbM').onclick=function(){LW=320;$('#lbM').setAttribute('aria-pressed',true);$('#lbD').setAttribute('aria-pressed',false);if(LB!=null)paintLb()};
+$('#lbImgEd').onclick=function(){if(LB!=null)openCrop(LB)};
+$('#lbFile').addEventListener('change',function(){var f=this.files[0];if(!f||LB==null)return;var rd=new FileReader(),id=LB;rd.onload=function(){openCrop(id,rd.result);$('#iMsg').textContent='Loaded '+f.name+'. Drag the box to choose the crop, then choose Use this crop.'};rd.readAsDataURL(f);this.value=''});
+function lbTc(){var n=$('#lbTitle').value.length,c=$('#lbTc');c.textContent=n+' / 70';c.className='cnt '+(n>70?'over':'ok')}
+$('#lbTitle').addEventListener('input',function(){
+  if(LB==null)return;S.edits[LB]=S.edits[LB]||{};S.edits[LB].title=this.value;S.approved=false;lbTc();
+  var h=$('#lbImg h5');if(h)h.textContent=this.value;render();
+});
+function lbGo(n){var ids=lbIds(),i=ids.indexOf(LB)+n;if(i>=0&&i<ids.length){LB=ids[i];paintLb()}}
+$('#lbPrev').onclick=function(){lbGo(-1)};$('#lbNext').onclick=function(){lbGo(1)};
+$('#lbPick').onclick=function(){var i=S.sel.indexOf(LB);if(i>-1)S.sel.splice(i,1);else if(S.sel.length<MAX)S.sel.push(LB);S.approved=false;render();paintLb()};
+function closeLb(){$('#lbScrim').classList.remove('show');LB=null}
+$('#lbX').onclick=closeLb;$('#lbScrim').addEventListener('click',function(e){if(e.target.id==='lbScrim')closeLb()});
+document.addEventListener('keydown',function(e){
+  if(LB!=null){if(e.key==='Escape')closeLb();if(e.key==='ArrowLeft')lbGo(-1);if(e.key==='ArrowRight')lbGo(1);return}
+  if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('[data-prev]')){e.preventDefault();openLb(+e.target.dataset.prev)}
+});
+/* ---- story editor: headline, author, 3 lines, link, image, YouTube ---- */
+var ED=null;
+function openEdit(id){
+  ED=id;var st=story(id);
+  $('#edForm').innerHTML=
+   '<div class="fld"><label for="edT">Headline <span class="cnt" id="edTc"></span></label><input id="edT"></div>'+
+   '<div class="two"><div class="fld"><label for="edA">Author</label><input id="edA"></div><div class="fld"><label for="edU">Link back to source</label><input id="edU"></div></div>'+
+   '<div class="fld"><label for="edB">3 lines of content <span class="cnt" id="edBc"></span></label><textarea id="edB" rows="5"></textarea></div>'+
+   '<div class="fld"><label>Image <span class="cnt" id="edIs"></span></label><div class="edimg" id="edImg"></div>'+
+   '<div class="acts" style="margin-top:8px"><label class="btn sm dark" style="cursor:pointer">Upload image<input type="file" id="edF" accept="image/*" hidden></label><button class="btn sm ghost" id="edCrop" type="button">Adjust crop</button><button class="btn sm ghost" id="edDef" type="button">Use default image</button><button class="btn sm ghost" id="edThumb" type="button">Use video thumbnail</button></div></div>'+
+   '<div class="fld"><label for="edY">YouTube link (optional) <span class="cnt" id="edYs"></span></label><input id="edY" placeholder="https://www.youtube.com/watch?v=..."><p class="hint">When set, the image and the button open the video, and the story is labelled as a video.</p></div>';
+  $('#edT').value=ed(id,'title');$('#edA').value=ed(id,'author');$('#edU').value=ed(id,'url');$('#edB').value=ed(id,'sum');$('#edY').value=ed(id,'yt');
+  $('#edMsg').textContent='';$('#edScrim').classList.add('show');paintEd();
+}
+function setEd(f,v){S.edits[ED]=S.edits[ED]||{};S.edits[ED][f]=v;S.approved=false}
+function paintEd(){
+  var st=story(ED),tl=$('#edT').value.length,bl=$('#edB').value.length,y=ytId($('#edY').value);
+  $('#edTc').textContent=tl+' / 70';$('#edTc').className='cnt '+(tl>70?'over':'ok');
+  $('#edBc').textContent=bl+' / 230';$('#edBc').className='cnt '+(bl>230||bl<120?'over':'ok');
+  var im=$('#edImg');im.style.background=st.img?bg(st):'';im.className='edimg'+(st.img?'':' none')+(st.video||y?' v':'');im.innerHTML=st.img?'':'<span>No image yet. Upload one, use the default, or add a YouTube link.</span>';
+  $('#edIs').textContent=st.img?'✓ Image set':'⚠ Required';$('#edIs').className='cnt '+(st.img?'ok':'over');
+  var v=$('#edY').value.trim();$('#edYs').textContent=!v?'':(y?'✓ Valid link':'⚠ Not a YouTube link');$('#edYs').className='cnt '+(y?'ok':'over');
+  $('#edThumb').disabled=!y;$('#edCrop').disabled=!st.img;
+  $('#edPrev').innerHTML=storyHtml(ED);
+}
+document.addEventListener('input',function(e){
+  if(ED==null)return;var t=e.target,m={edT:'title',edA:'author',edU:'url',edB:'sum',edY:'yt'}[t.id];
+  if(m){setEd(m,t.value);if(m==='yt'&&ytId(t.value)&&!story(ED).img){story(ED).img=true;S.imgOk[ED]=true}paintEd()}
+});
+document.addEventListener('change',function(e){
+  if(ED==null||e.target.id!=='edF'||!e.target.files[0])return;
+  var f=e.target.files[0],rd=new FileReader();
+  rd.onload=function(){openCrop(ED,rd.result);$('#iMsg').textContent='Loaded '+f.name+'. Drag the box to choose the crop, then choose Use this crop.'};
+  rd.readAsDataURL(f);e.target.value='';
+});
+document.addEventListener('click',function(e){
+  if(ED==null)return;var id=e.target.id;
+  if(id==='edDef'){var st=story(ED);st.cust='default';st.img=true;S.imgOk[ED]=true;S.approved=false;paintEd()}
+  if(id==='edThumb'){var st2=story(ED);st2.cust=null;st2.img=true;S.imgOk[ED]=true;paintEd()}
+  if(id==='edCrop'){openCrop(ED)}
+  if(id==='edDone'||id==='edX'||id==='edScrim'){var e2=ED;ED=null;$('#edScrim').classList.remove('show');render();if(LB!=null)paintLb()}
+});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&ED!=null&&C==null){ED=null;$('#edScrim').classList.remove('show');render()}});
+/* ---- image crop: free box. Drag the box, a side (height or width only) or a corner. Output is 1200 px wide, height follows the crop. ---- */
+var C=null,IMG=new Image(),R169=16/9,ARMIN=1,ARMAX=3,MINPX=160;
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function openCrop(id,dataUrl){
+  var st=story(id);C={id:id,custom:false};
+  var url=dataUrl||(st.cust&&st.cust!=="default"?st.cust:(st.cust==="default"?defImg():pic(st)));C.custom=!!dataUrl||(st.cust&&st.cust!=="default");
+  $('#imSub').textContent=st.title;$('#iMsg').textContent=C.custom?'':'This is a placeholder photo. Choose an image from your computer to crop the real one.';
+  $('#crLock').checked=false;$('#imgScrim').classList.remove('lock');$('#aiPanel').hidden=true;$('#aiG').innerHTML='';$('#aiSt').textContent='';$('#imgScrim').classList.add('show');
+  IMG=new Image();IMG.onload=function(){
+    C.w=IMG.naturalWidth;C.h=IMG.naturalHeight;
+    var maxW=Math.min(560,window.innerWidth-70),maxH=380;C.sc=Math.min(maxW/C.w,maxH/C.h);
+    var stg=$('#crStage');stg.style.width=(C.w*C.sc)+'px';stg.style.height=(C.h*C.sc)+'px';$('#crImg').src=url;
+    resetCrop();
+  };IMG.src=url;
+}
+function resetCrop(){
+  var fw=Math.min(C.w,C.h*R169)*0.88;C.fw=fw;C.fh=fw/R169;C.fx=(C.w-C.fw)/2;C.fy=(C.h-C.fh)/2;paintCrop();
+}
+function paintCrop(){
+  var f=$('#crFrame'),sc=C.sc;f.style.left=(C.fx*sc)+'px';f.style.top=(C.fy*sc)+'px';f.style.width=(C.fw*sc)+'px';f.style.height=(C.fh*sc)+'px';
+  var o=$('#crOut'),ar=C.fw/C.fh;o.height=Math.round(o.width/ar);o.getContext('2d').drawImage(IMG,C.fx,C.fy,C.fw,C.fh,0,0,o.width,o.height);
+  $('#crLab').textContent='What goes in the newsletter · 1200×'+Math.round(1200/ar);
+  var eff=Math.round(C.fw),q=$('#iq');
+  q.textContent=eff>=1200?'✓ Sharp: '+eff+' px of detail':(eff>=800?'⚠ Slightly soft: '+eff+' px of detail for 1200 px':'⚠ Too small: '+eff+' px of detail. Make the box bigger or use a larger image.');
+  q.className='cstat '+(eff>=1200?'ok':'bad');
+}
+var CD=null;
+function ptr(e){var r=$('#crStage').getBoundingClientRect();return {x:(e.clientX-r.left)/C.sc,y:(e.clientY-r.top)/C.sc}}
+$('#crLock').addEventListener('change',function(){if(!C)return;$('#imgScrim').classList.toggle('lock',this.checked);if(this.checked){var fw=Math.min(C.fw,C.fh*R169);C.fw=fw;C.fh=fw/R169;C.fx=clamp(C.fx,0,C.w-C.fw);C.fy=clamp(C.fy,0,C.h-C.fh);paintCrop()}});
+$('#crFrame').addEventListener('pointerdown',function(e){
+  if(!C)return;e.preventDefault();var h=e.target.dataset&&e.target.dataset.h,p=ptr(e);
+  CD={h:h||null,sx:p.x,sy:p.y,fx:C.fx,fy:C.fy,fw:C.fw,fh:C.fh};try{this.setPointerCapture(e.pointerId)}catch(x){}
+});
+$('#crFrame').addEventListener('pointermove',function(e){
+  if(!CD||!C)return;var p=ptr(e),lock=$('#crLock').checked;
+  if(!CD.h){C.fx=clamp(CD.fx+(p.x-CD.sx),0,C.w-C.fw);C.fy=clamp(CD.fy+(p.y-CD.sy),0,C.h-C.fh);paintCrop();return}
+  var h=CD.h,L=CD.fx,T=CD.fy,Rr=CD.fx+CD.fw,B=CD.fy+CD.fh;
+  if(h.indexOf('w')>-1)L=clamp(p.x,0,Rr-MINPX);
+  if(h.indexOf('e')>-1)Rr=clamp(p.x,L+MINPX,C.w);
+  if(h.indexOf('n')>-1)T=clamp(p.y,0,B-MINPX);
+  if(h.indexOf('s')>-1)B=clamp(p.y,T+MINPX,C.h);
+  var w=Rr-L,hh=B-T;
+  if(lock){ /* keep 16:9 anchored to the opposite corner, driven by width */
+    var right=h.indexOf('e')>-1,bottom=h.indexOf('s')>-1,ax=right?CD.fx:CD.fx+CD.fw,ay=bottom?CD.fy:CD.fy+CD.fh;
+    var roomX=right?C.w-ax:ax,roomY=(bottom?C.h-ay:ay)*R169,nw=clamp(Math.abs(p.x-ax),MINPX,Math.max(MINPX,Math.min(roomX,roomY)));
+    C.fw=nw;C.fh=nw/R169;C.fx=right?ax:ax-nw;C.fy=bottom?ay:ay-C.fh;paintCrop();return;
+  }
+  /* keep the shape between square and a wide banner (3:1) */
+  if(w/hh>ARMAX){ if(h.indexOf('e')>-1||h.indexOf('w')>-1){w=hh*ARMAX}else{hh=w/ARMAX} }
+  if(w/hh<ARMIN){ if(h.indexOf('n')>-1||h.indexOf('s')>-1){hh=w/ARMIN}else{w=hh*ARMIN} }
+  if(h.indexOf('w')>-1)L=Rr-w;else Rr=L+w;
+  if(h.indexOf('n')>-1)T=B-hh;else B=T+hh;
+  if(L<0||T<0||Rr>C.w||B>C.h)return;
+  C.fx=L;C.fy=T;C.fw=Rr-L;C.fh=B-T;paintCrop();
+});
+$('#crFrame').addEventListener('pointerup',function(){CD=null});
+$('#iRst').onclick=function(){if(C){$('#crLock').checked=false;$('#imgScrim').classList.remove('lock');resetCrop()}};
+$('#iFile').addEventListener('change',function(){
+  var f=this.files[0];if(!f||!C)return;var rd=new FileReader(),id=C.id;
+  rd.onload=function(){openCrop(id,rd.result);$('#iMsg').textContent='Loaded '+f.name+'. Drag the box or its sides to choose the crop, then choose Use this crop.'};rd.readAsDataURL(f);this.value='';
+});
+/* ---- AI image generation (OpenAI Images API, called from OUR server, never from the browser) ----
+   The page posts {prompt, style, n, size} to IMAGE_API. The server holds the OpenAI key, calls POST /v1/images/generations
+   (gpt-image-1, size 1536x1024) and returns {images:["data:image/png;base64,...", ...]}. With no IMAGE_API set, this runs in demo mode. */
+var IMAGE_API="";
+function aiDefaultPrompt(id){return 'Editorial photograph for a mining news story titled "'+ed(id,'title')+'". Northern Ontario setting, natural light, realistic, wide landscape composition. No text, no logos, no identifiable people.'}
+function demoImgs(n,prompt){
+  var pal=[["#0e7490","#164e63"],["#b45309","#451a03"],["#4d7c0f","#1a2e05"],["#7c3aed","#2e1065"]],out=[];
+  for(var i=0;i<n;i++){var c=pal[i%pal.length];
+    var svg='<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="1024" viewBox="0 0 1536 1024"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+c[0]+'"/><stop offset="1" stop-color="'+c[1]+'"/></linearGradient></defs><rect width="1536" height="1024" fill="url(#g)"/><circle cx="'+(300+i*260)+'" cy="230" r="90" fill="#fff" fill-opacity=".2"/><path d="M0 760 L260 520 L520 680 L820 400 L1100 620 L1536 440 V1024 H0Z" fill="#000" fill-opacity=".3"/><rect x="'+(700+i*70)+'" y="420" width="18" height="190" fill="#fff" fill-opacity=".6"/><text x="48" y="980" font-family="Arial" font-size="34" fill="#fff" fill-opacity=".8">DEMO IMAGE · option '+(i+1)+'</text></svg>';
+    out.push('data:image/svg+xml;utf8,'+encodeURIComponent(svg));}
+  return out;
+}
+function openAI(){var p=$('#aiPanel');p.hidden=false;if(!$('#aiP').value||C._ai!==C.id){$('#aiP').value=aiDefaultPrompt(C.id);C._ai=C.id}
+  $('#aiNote').textContent=IMAGE_API?'Images are generated by OpenAI through the Trade-Ex server.':'Demo mode: no OpenAI connection yet, so these are sample pictures. The real build calls the Trade-Ex server, which calls OpenAI.';$('#aiP').focus()}
+$('#iAI').onclick=function(){if(C)openAI()};
+$('#aiGo').onclick=async function(){
+  if(!C)return;var btn=this,id=C.id,n=+$('#aiN').value,prompt=$('#aiP').value.trim(),style=$('#aiS').value;
+  if(!prompt){$('#aiSt').textContent='Describe the picture first.';return}
+  btn.disabled=true;$('#aiSt').textContent='Generating…';$('#aiG').innerHTML='';
+  try{
+    var imgs;
+    if(IMAGE_API){var r=await fetch(IMAGE_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt+(style==='illustration'?' Clean flat editorial illustration style.':' Photorealistic.'),n:n,size:'1536x1024'})});if(!r.ok)throw new Error('The image service returned '+r.status);imgs=(await r.json()).images}
+    else{await new Promise(function(x){setTimeout(x,1100)});imgs=demoImgs(n,prompt)}
+    $('#aiSt').textContent='Pick one to crop and use.';
+    $('#aiG').innerHTML=imgs.map(function(u,i){return '<button type="button" class="aithumb" data-ai="'+i+'" aria-label="Use option '+(i+1)+'"><img src="'+u+'" alt="Generated option '+(i+1)+'"></button>'}).join('');
+    C._imgs=imgs;
+  }catch(e){$('#aiSt').textContent='Could not generate: '+e.message+'. Try again.'}
+  btn.disabled=false;
+};
+$('#aiG').addEventListener('click',function(e){var b=e.target.closest('.aithumb');if(!b||!C)return;var id=C.id,u=C._imgs[+b.dataset.ai];openCrop(id,u);$('#iMsg').textContent='AI image loaded. Drag the box to choose the crop, then choose Use this crop.';});
+$('#lbAI').onclick=function(){if(LB==null)return;openCrop(LB);openAI()};
+$('#iDef').onclick=function(){if(!C)return;var st=story(C.id);st.cust='default';st.ar=null;st.img=true;S.imgOk[C.id]=true;S.approved=false;closeCrop();render();refreshOpen()};
+function closeCrop(){$('#imgScrim').classList.remove('show');C=null}
+function refreshOpen(){if(typeof ED!=='undefined'&&ED!=null)paintEd();if(LB!=null)paintLb()}
+$('#iUse').onclick=function(){
+  if(!C)return;var ar=C.fw/C.fh,cv=document.createElement('canvas');cv.width=1200;cv.height=Math.round(1200/ar);cv.getContext('2d').drawImage(IMG,C.fx,C.fy,C.fw,C.fh,0,0,cv.width,cv.height);
+  var st=story(C.id),url;try{url=cv.toDataURL('image/jpeg',0.88)}catch(e){$('#iMsg').textContent='This image cannot be cropped here. Choose a file from your computer.';return}
+  st.cust=url;st.ar=ar;st.img=true;DIMX[C.id]=[1200,cv.height,.5,.5];S.imgOk[C.id]=true;S.approved=false;closeCrop();render();refreshOpen();
+};
+$('#iCancel').onclick=closeCrop;$('#imX').onclick=closeCrop;$('#imgScrim').addEventListener('click',function(e){if(e.target.id==='imgScrim')closeCrop()});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&C)closeCrop()});
+
+/* ---- one-hour budget ---- */
+var T={t0:Date.now(),speed:1},TARGET=[15,15,10,15,5];
+function elapsedMin(){return (Date.now()-T.t0)/60000*T.speed}
+function mmss(m){var t=Math.floor(m*60),h=Math.floor(t/3600),mm=Math.floor(t/60)%60,ss=t%60;return (h?h+':':'')+String(mm).padStart(2,'0')+':'+String(ss).padStart(2,'0')}
+$('#tm').innerHTML='<div class="kv"><span>Elapsed</span><b id="tmE" class="clock" style="color:var(--ink)">00:00</b></div><div class="gauge" style="height:10px"><i id="tmB" class="ok" style="width:0"></i></div><div class="tl" id="tmS"></div><label class="demochk"><input type="checkbox" id="spd"> Demo: 1 second = 1 minute</label>';
+$('#spd').onchange=function(){var m=elapsedMin();T.speed=this.checked?60:1;T.t0=Date.now()-m/T.speed*60000;tick()};
+function tick(){
+  if(S.sent)return;var m=elapsedMin(),pct=Math.min(100,m/60*100);
+  $('#tmE').textContent=mmss(m)+' / 60:00';$('#tmB').style.width=pct+'%';$('#tmB').className=m>=60?'over':m>=45?'warn':'ok';
+  $('#tmS').innerHTML=STEPS.map(function(x,i){return '<div class="'+(i===S.step?'cur':'')+'"><span>'+x[0]+'</span><span>'+TARGET[i]+' min</span></div>'}).join('');
+}
+setInterval(tick,1000);
+S.sel=[1,2,3,4,5,6,7];render();tick();
+</script>

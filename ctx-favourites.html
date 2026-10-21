@@ -1,0 +1,281 @@
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trade-Ex Favourites</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: mobile column. Sticky header with event filter, sort row, then a list of favourite exhibitors that doubles
+   as a show-day checklist (visited tick, private note, booth). Same Trade-Ex ink + gold language as ctx-home.html. */
+:root{
+  --display:'Barlow Condensed','Arial Narrow',sans-serif; --body:'Barlow',system-ui,Arial,sans-serif;
+  --bg:#ffffff; --soft:#f5f6f8; --ink:#14181f; --muted:#5d6675; --line:#e1e4ea; --gold:#f2a900; --gold-d:#8a6100; --tint:#fff3d0;
+  --cme:#b87f00; --cencan:#c8102e; --ok:#14833b; --err:#c4251a;
+}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent}
+*{box-sizing:border-box}
+button,input,textarea,select{font:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.app{max-width:480px;margin:0 auto;min-height:100%;padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--line);padding:12px 16px 10px}
+.bar{display:flex;align-items:center;gap:10px}
+.bar a.back{width:38px;height:38px;border-radius:50%;background:var(--soft);display:grid;place-items:center;color:var(--ink);text-decoration:none;font-size:18px;flex:none}
+.bar h1{font-family:var(--display);font-weight:800;font-size:28px;margin:0;line-height:1;flex:1}
+.bar .count{font-family:var(--display);font-weight:800;background:var(--ink);color:var(--gold);border-radius:999px;padding:3px 12px;font-size:16px}
+.tabs{display:flex;gap:8px;margin-top:10px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:none;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;font-weight:600;font-size:14.5px;color:var(--ink);cursor:pointer;display:flex;gap:7px;align-items:center}
+.tabs button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tabs i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.sortrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px 4px;color:var(--muted);font-size:14px}
+.sortrow select{border:1.5px solid var(--line);border-radius:10px;background:#fff;padding:7px 10px;font-size:14px;color:var(--ink)}
+.prog{margin:8px 16px 4px;background:var(--soft);border-radius:12px;padding:10px 12px;font-size:14px;display:flex;align-items:center;gap:12px}
+.prog .barw{flex:1;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.prog .barw i{display:block;height:100%;background:var(--ok);width:0;transition:width .3s}
+.list{display:flex;flex-direction:column;gap:10px;padding:10px 16px 0;margin:0;list-style:none}
+.card{border:1px solid var(--line);border-radius:16px;background:#fff;overflow:hidden}
+.card.vis{background:var(--soft)}
+.card.vis .nm{text-decoration:line-through;text-decoration-color:rgba(20,24,31,.35)}
+.row1{display:flex;gap:12px;align-items:flex-start;padding:12px 12px 10px}
+.ic{flex:none;width:46px;height:46px;border-radius:12px;background:linear-gradient(145deg,#2a2e37,#12151b);color:var(--gold);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:19px}
+.bd{flex:1;min-width:0}
+.ct{font-size:12.5px;font-weight:700;color:var(--gold-d);text-transform:uppercase;letter-spacing:.5px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.ev{font-size:10.5px;font-weight:800;color:#fff;border-radius:4px;padding:1px 6px;letter-spacing:.6px}
+.ev.cme{background:var(--cme)}.ev.cencan{background:var(--cencan)}
+.nm{font-weight:700;font-size:17px;line-height:1.2}
+.ds{font-size:14px;color:#4b5563;margin-top:1px}
+.booth{flex:none;text-align:right;font-family:var(--display);font-weight:800;font-size:22px;line-height:1}
+.booth small{display:block;font-family:var(--body);font-weight:500;font-size:11px;color:var(--muted);margin-top:2px}
+.acts{display:flex;border-top:1px solid var(--line)}
+.acts button{flex:1;border:0;background:none;padding:11px 4px;font-weight:600;font-size:14px;color:var(--ink);cursor:pointer;display:flex;gap:6px;align-items:center;justify-content:center}
+.acts button+button{border-left:1px solid var(--line)}
+.acts .rm{color:var(--err)}
+.acts .on{color:var(--ok)}
+.note{padding:0 12px 12px;display:none}
+.note.open{display:block}
+.note textarea{width:100%;min-height:68px;border:1.5px solid var(--line);border-radius:11px;padding:10px;font-size:15px;resize:vertical;background:#fff;color:var(--ink)}
+.note textarea:focus{border-color:var(--gold);outline:none;box-shadow:0 0 0 4px var(--tint)}
+.dict{display:flex;align-items:center;gap:10px;margin-top:8px}
+.mic{flex:none;border:1.5px solid var(--ink);background:#fff;color:var(--ink);border-radius:999px;padding:8px 14px 8px 10px;font-weight:700;font-size:14.5px;cursor:pointer;display:flex;align-items:center;gap:8px}
+.mic svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.mic.rec{background:var(--err);border-color:var(--err);color:#fff}
+.mic.rec svg{animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.25)}}
+.mstat{font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.mstat.err{color:var(--err);white-space:normal}
+.stamp{font-size:12px;color:var(--muted);margin:0 12px 10px}
+.saved-note{padding:0 12px 10px;font-size:14px;color:#3a4252;background:var(--tint);margin:0 12px 10px;border-radius:9px;padding:8px 10px}
+.empty{margin:30px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
+.empty .big{width:76px;height:76px;border-radius:50%;background:var(--tint);display:grid;place-items:center;font-size:34px;color:var(--gold-d)}
+.empty h2{font-family:var(--display);font-size:26px;font-weight:800;margin:0}
+.empty p{margin:0;color:var(--muted);max-width:30ch}
+.btn{border:0;border-radius:13px;background:var(--gold);color:#1a1205;font-family:var(--display);font-weight:800;font-size:18px;letter-spacing:.6px;text-transform:uppercase;padding:13px 20px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.dark{background:var(--ink);color:#fff}
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px))}
+.dock .in{max-width:480px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.toast{position:fixed;left:16px;right:16px;bottom:calc(84px + env(safe-area-inset-bottom,0px));max-width:448px;margin:0 auto;background:var(--ink);color:#fff;border-radius:12px;padding:11px 14px;display:none;align-items:center;justify-content:space-between;gap:12px;z-index:40;font-size:14.5px}
+.toast.show{display:flex}
+.toast button{border:0;background:none;color:var(--gold);font-weight:700;cursor:pointer;padding:4px 6px}
+.scrim{position:fixed;inset:0;background:rgba(8,10,14,.6);z-index:50;display:none;align-items:flex-end;justify-content:center}
+.scrim.show{display:flex}
+.sheet{background:#fff;width:100%;max-width:480px;border-radius:24px 24px 0 0;padding:20px 18px calc(22px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px}
+.sheet h2{font-family:var(--display);font-size:26px;font-weight:800;margin:0}
+.sheet p{margin:0;color:var(--muted);font-size:15px}
+.sheet .x{align-self:flex-end;border:0;background:var(--soft);width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;margin-bottom:-8px}
+.fld label{display:block;font-size:13px;font-weight:600;color:#3a4252;margin-bottom:4px}
+.fld input{width:100%;height:50px;border:1.5px solid var(--line);border-radius:13px;padding:0 14px;font-size:16px;background:var(--soft)}
+.fld input:focus{border-color:var(--gold);background:#fff;outline:none;box-shadow:0 0 0 4px var(--tint)}
+.msg{font-size:13.5px;min-height:18px}
+.ex{font-size:12.5px;background:#fff6dd;border:1px dashed var(--gold-d);border-radius:9px;padding:6px 10px;color:#6b4c00;margin:10px 16px 0}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){.prog .barw i{transition:none}}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="bar">
+      <a class="back" href="ctx-home.html" aria-label="Back to home">←</a>
+      <h1>Favourites</h1>
+      <span class="count" id="count">0</span>
+    </div>
+    <div class="tabs" id="tabs" role="group" aria-label="Filter by event">
+      <button data-f="all" aria-pressed="true">All events</button>
+      <button data-f="cme" aria-pressed="false"><i style="background:var(--cme)"></i>Canadian Mining Expo</button>
+      <button data-f="cencan" aria-pressed="false"><i style="background:var(--cencan)"></i>CEN-CAN</button>
+      <button data-f="notes" aria-pressed="false">📝 With notes</button>
+    </div>
+  </header>
+
+  <div class="ex" id="exNote" hidden>Example favourites so you can see the page. Star exhibitors on the home page and yours replace these.</div>
+
+  <div class="prog" id="prog" hidden><span id="progT"></span><div class="barw"><i id="progB"></i></div></div>
+  <div class="sortrow" id="sortrow" hidden>
+    <label for="sort">Sort by</label>
+    <select id="sort"><option value="recent">Recently saved</option><option value="booth">Booth number</option><option value="name">Company name</option><option value="todo">Still to visit</option></select>
+  </div>
+
+  <ul class="list" id="list"></ul>
+
+  <div class="empty" id="empty" hidden>
+    <div class="big">☆</div>
+    <h2>No favourites yet</h2>
+    <p id="emptyP">Tap the star next to any exhibitor and it lands here, with its booth number, ready for show day.</p>
+    <a class="btn" href="ctx-home.html#finder">Find exhibitors</a>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toastT"></span><button id="undo" type="button">Undo</button></div>
+
+<div class="dock" id="dock">
+  <div class="in">
+    <button class="btn dark" id="emailBtn" type="button">Email my list</button>
+    <button class="btn" id="copyBtn" type="button">Copy list</button>
+  </div>
+</div>
+
+<div class="scrim" id="scrim">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="shT">
+    <button class="x" id="shX" type="button" aria-label="Close">✕</button>
+    <h2 id="shT">Email my favourites</h2>
+    <p id="shP">We’ll send your list with booth numbers and your notes.</p>
+    <div class="fld" id="shF"><label for="shE">Email address</label><input id="shE" type="email" inputmode="email" autocomplete="email" placeholder="you@company.com"></div>
+    <div class="msg" id="shM" role="status"></div>
+    <button class="btn" id="shGo" type="button">Send my list</button>
+  </div>
+</div>
+
+<script>
+/* Demo data: same placeholder exhibitors as ctx-home.html. Live build: favourites are stored on the attendee's account
+   (signed in) or this device (guest), and exhibitor details come from the show database. Saved names live in
+   localStorage 'ctx_saved' (shared with the home page); notes and visited ticks are stored beside it. */
+var EXH=[
+ {n:"Northforge Drilling Systems",c:"Drilling & Blasting",b:"A-112",ev:["cme","cencan"],d:"Surface & underground drilling — rigs, automation and consumables."},
+ {n:"Boreal Heavy Equipment",c:"Haulage & Loaders",b:"B-204",ev:["cme","cencan"],d:"Haulage and loading fleet plus parts and service."},
+ {n:"Terra Core Exploration",c:"Geo Physics",b:"C-038",ev:["cme"],d:"Exploration drilling, assay and geoscience."},
+ {n:"GuardLine Safety Supply",c:"Safety & PPE",b:"A-061",ev:["cme","cencan"],d:"Mine safety equipment, PPE and emergency refuge."},
+ {n:"DeepVent Mine Air",c:"Ventilation & Cooling",b:"D-150",ev:["cme"],d:"Underground ventilation, cooling and ventilation-on-demand."},
+ {n:"RockShield Ground Control",c:"Ground Support",b:"C-127",ev:["cme"],d:"Ground support products and engineering."},
+ {n:"OreFlow Processing",c:"Processing",b:"E-210",ev:["cme"],d:"Comminution and concentration, plant design to upgrades."},
+ {n:"Voltec Mine Electrical",c:"Production Tech",b:"B-088",ev:["cme","cencan"],d:"Electrification, power distribution and automation."},
+ {n:"ClearWater Environmental",c:"Environmental",b:"D-019",ev:["cme","cencan"],d:"Water, tailings and closure/reclamation services."},
+ {n:"Lakehead Energy Services",c:"Energy",b:"F-031",ev:["cencan"],d:"Power, transmission and renewable energy for remote sites."},
+ {n:"Pathway Mining Careers",c:"Jobs",b:"JOB FAIR",ev:["cme","cencan"],d:"The on-site Job Fair: hiring booths, apprenticeships, training."},
+ {n:"SignalPost Mine Comms",c:"Production Tech",b:"A-145",ev:["cme"],d:"Underground communications, networks and tracking."}
+];
+var $=function(s){return document.querySelector(s)};
+var store={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+function load(k,def){try{return JSON.parse(store.get(k))||def}catch(e){return def}}
+var saved=load('ctx_saved',null), example=false;
+if(!saved||!saved.length){ /* nothing saved yet: show marked examples (not written to storage) */
+  saved=["Northforge Drilling Systems","DeepVent Mine Air","Pathway Mining Careers","Voltec Mine Electrical"]; example=true; }
+var notes=load('ctx_notes',{}), visited=load('ctx_visited',{});
+var filter="all", sort="recent", lastRemoved=null, openNote=null, user=load('ctx_user',null);
+function persist(){ if(!example) store.set('ctx_saved',JSON.stringify(saved)); store.set('ctx_notes',JSON.stringify(notes)); store.set('ctx_visited',JSON.stringify(visited)); }
+function byName(n){return EXH.filter(function(e){return e.n===n})[0]}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function boothKey(b){return b==="JOB FAIR"?"~":b}
+
+function view(){
+  var items=saved.map(function(n,i){var e=byName(n);return e?{e:e,i:i}:null}).filter(Boolean);
+  var inFilter=items.filter(function(x){return filter==="all"||(filter==="notes"?!!notes[x.e.n]:x.e.ev.indexOf(filter)>-1)});
+  if(sort==="booth") inFilter.sort(function(a,b){return boothKey(a.e.b)<boothKey(b.e.b)?-1:1});
+  if(sort==="name") inFilter.sort(function(a,b){return a.e.n<b.e.n?-1:1});
+  if(sort==="todo") inFilter.sort(function(a,b){return (visited[a.e.n]?1:0)-(visited[b.e.n]?1:0)||a.i-b.i});
+  if(sort==="recent") inFilter.sort(function(a,b){return b.i-a.i});
+  $('#count').textContent=items.length;
+  $('#exNote').hidden=!example;
+  var has=inFilter.length>0;
+  $('#empty').hidden=has; $('#sortrow').hidden=!has; $('#prog').hidden=!has; $('#dock').hidden=!items.length;
+  if(!has) $('#emptyP').textContent=items.length?"Nothing saved for this event yet. Try another filter.":"Tap the star next to any exhibitor and it lands here, with its booth number, ready for show day.";
+  var done=inFilter.filter(function(x){return visited[x.e.n]}).length;
+  $('#progT').textContent=done+" of "+inFilter.length+" visited";
+  $('#progB').style.width=inFilter.length?(done/inFilter.length*100)+"%":"0";
+  $('#list').innerHTML=inFilter.map(function(x){
+    var e=x.e,v=!!visited[e.n],nt=notes[e.n]||"",open=openNote===e.n;
+    return '<li class="card'+(v?' vis':'')+'" data-n="'+esc(e.n)+'"><div class="row1"><div class="ic">'+e.n.split(' ').slice(0,2).map(function(w){return w[0]}).join('')+'</div>'+
+     '<div class="bd"><div class="ct">'+esc(e.c)+e.ev.map(function(k){return '<span class="ev '+k+'">'+(k==="cme"?"CME":"CEN-CAN")+'</span>'}).join('')+'</div><div class="nm">'+esc(e.n)+'</div><div class="ds">'+esc(e.d)+'</div></div>'+
+     '<div class="booth">'+esc(e.b)+'<small>booth</small></div></div>'+
+     (nt&&!open?'<div class="saved-note">'+esc(nt)+'</div>':'')+
+     '<div class="note'+(open?' open':'')+'"><textarea aria-label="Note about '+esc(e.n)+'" placeholder="Type, or tap Dictate and speak. e.g. quote for new fleet, bring spec sheet">'+esc(nt)+'</textarea>'+
+     '<div class="dict"><button type="button" class="mic" data-a="mic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span>Dictate</span></button><span class="mstat" aria-live="polite"></span></div></div>'+
+     '<div class="acts"><button data-a="vis" class="'+(v?'on':'')+'">'+(v?'✓ Visited':'☐ Mark visited')+'</button><button data-a="note">'+(open?'Done':(nt?'Edit note':'Add note'))+'</button><button data-a="rm" class="rm">Remove</button></div></li>';
+  }).join('');
+}
+
+$('#tabs').onclick=function(e){var b=e.target.closest('button');if(!b)return;filter=b.dataset.f;this.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',x===b)});view()};
+$('#sort').onchange=function(){sort=this.value;view()};
+/* ---- notes: autosave while typing + speech to text (Web Speech API). Works in Chrome, Edge and Safari over https;
+   the browser asks for microphone permission. Live build can swap in a server transcription service if needed. ---- */
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition, rec=null, recCard=null;
+$('#list').addEventListener('input',function(e){
+  var ta=e.target.closest('textarea');if(!ta)return;var n=ta.closest('.card').dataset.n,t=ta.value.trim();
+  if(t)notes[n]=t;else delete notes[n];persist();
+});
+function stopDictation(){ if(rec){try{rec.stop()}catch(e){}} }
+function setMic(card,on,msg,isErr){
+  var b=card.querySelector('.mic'),s=card.querySelector('.mstat');
+  b.classList.toggle('rec',on);b.querySelector('span').textContent=on?'Stop':'Dictate';
+  s.textContent=msg||'';s.classList.toggle('err',!!isErr);
+}
+function dictate(card){
+  var s=card.querySelector('.mstat');
+  if(rec&&recCard===card){stopDictation();return}
+  stopDictation();
+  if(!SR){setMic(card,false,'Speech to text isn’t available in this browser. Use Chrome, Edge or Safari, or type your note.',true);return}
+  var ta=card.querySelector('textarea'),n=card.dataset.n,base=ta.value,finalT='';
+  rec=new SR();recCard=card;rec.lang='en-CA';rec.continuous=true;rec.interimResults=true;
+  rec.onstart=function(){setMic(card,true,'Listening… speak now')};
+  rec.onresult=function(ev){
+    var interim='';
+    for(var i=ev.resultIndex;i<ev.results.length;i++){var r=ev.results[i];if(r.isFinal)finalT+=r[0].transcript+' ';else interim+=r[0].transcript}
+    ta.value=(base?base.replace(/\s*$/,' '):'')+finalT+interim;
+    s.textContent=interim?'…'+interim.slice(-40):'Listening… speak now';
+  };
+  rec.onerror=function(ev){
+    var m={'not-allowed':'Microphone blocked. Allow it in your browser’s site settings, then try again.','service-not-allowed':'Microphone blocked. Allow it in your browser’s site settings, then try again.','no-speech':'Didn’t hear anything. Tap Dictate and try again.','audio-capture':'No microphone found on this device.','network':'Speech service needs an internet connection.'}[ev.error]||'Dictation stopped ('+ev.error+').';
+    setMic(card,false,m,true);
+  };
+  rec.onend=function(){
+    var t=ta.value.trim();if(t)notes[n]=t;else delete notes[n];persist();
+    if(!s.classList.contains('err'))setMic(card,false,t?'Saved to this exhibitor’s note.':'');
+    else card.querySelector('.mic').classList.remove('rec');
+    rec=null;recCard=null;
+  };
+  try{rec.start()}catch(e){setMic(card,false,'Couldn’t start the microphone. Try again.',true)}
+}
+$('#list').onclick=function(e){
+  var b=e.target.closest('button[data-a]');if(!b)return;var card=b.closest('.card'),n=card.dataset.n,a=b.dataset.a;
+  if(a==="mic"){dictate(card);return}
+  if(rec)stopDictation();
+  if(a==="vis"){visited[n]=!visited[n];persist();view()}
+  if(a==="note"){ if(openNote===n){var t=card.querySelector('textarea').value.trim();if(t)notes[n]=t;else delete notes[n];openNote=null;persist()}else{openNote=n}
+    view(); if(openNote){var ta=document.querySelector('.card[data-n="'+n.replace(/"/g,'\\"')+'"] textarea');if(ta)ta.focus()} }
+  if(a==="rm"){var i=saved.indexOf(n);lastRemoved={n:n,i:i};saved.splice(i,1);persist();view();toast(n+" removed")}
+};
+var tt;function toast(t){$('#toastT').textContent=t;$('#toast').classList.add('show');clearTimeout(tt);tt=setTimeout(function(){$('#toast').classList.remove('show')},5000)}
+$('#undo').onclick=function(){if(lastRemoved){saved.splice(lastRemoved.i,0,lastRemoved.n);lastRemoved=null;persist();view()}$('#toast').classList.remove('show')};
+
+function listText(){
+  return saved.map(byName).filter(Boolean).map(function(e){return e.n+" — Booth "+e.b+" ("+e.c+")"+(notes[e.n]?"\n  Note: "+notes[e.n]:"")}).join("\n");
+}
+$('#copyBtn').onclick=function(){
+  var t="My Trade-Ex favourites\n"+listText(), b=this;
+  function ok(){b.textContent="Copied";setTimeout(function(){b.textContent="Copy list"},1800)}
+  function fallback(){var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');ok()}catch(e){toast("Press and hold to copy")}ta.remove()}
+  try{navigator.clipboard.writeText(t).then(ok,fallback)}catch(e){fallback()}
+};
+function openSheet(){
+  $('#shM').textContent='';$('#shM').style.color='';
+  if(user&&user.email){$('#shP').textContent="Send your list of "+saved.length+" to "+user.email+".";$('#shF').hidden=true}
+  else{$('#shP').textContent="Enter your email and we’ll send the list with booth numbers and your notes.";$('#shF').hidden=false}
+  $('#scrim').classList.add('show');(user&&user.email?$('#shGo'):$('#shE')).focus();
+}
+$('#emailBtn').onclick=openSheet;$('#shX').onclick=function(){$('#scrim').classList.remove('show')};
+$('#scrim').onclick=function(e){if(e.target.id==='scrim')$('#scrim').classList.remove('show')};
+document.addEventListener('keydown',function(e){if(e.key==='Escape')$('#scrim').classList.remove('show')});
+$('#shGo').onclick=function(){
+  var em=user&&user.email?user.email:$('#shE').value.trim();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){$('#shM').style.color='var(--err)';$('#shM').textContent='Enter a valid email, like you@company.com.';return}
+  $('#shM').style.color='var(--ok)';$('#shM').textContent='Demo: your list would be emailed to '+em+'. Nothing was sent.';
+};
+view();
+</script>
