@@ -117,6 +117,19 @@ button,input,select,textarea{font:inherit;color:inherit}
 .sent-box{background:var(--ok-bg);border-radius:14px;padding:16px;margin-top:12px}
 .sent-box h3{margin:0 0 4px;font-family:var(--display);font-size:24px}
 .demo{font-size:12.5px;color:#6b4c00;background:#fff6dd;border:1px dashed var(--gold-d);border-radius:9px;padding:6px 10px;margin-top:10px}
+.adc{display:grid;grid-template-columns:150px 1fr;gap:12px;border:1.5px solid var(--line);border-radius:14px;padding:10px;margin-bottom:10px;background:#fff}
+@media(max-width:520px){.adc{grid-template-columns:1fr}}
+.adc.off{background:var(--bg);opacity:.9}
+.adthumb{aspect-ratio:3/1;width:100%;border-radius:8px;overflow:hidden;background:repeating-linear-gradient(45deg,#eceef2,#eceef2 8px,#f6f7f9 8px,#f6f7f9 16px);display:grid;place-items:center;color:var(--muted);font-weight:700;font-size:13px;align-self:start}
+.adthumb img{display:block;width:100%;height:100%;object-fit:cover}
+.adb small{display:block;color:var(--muted);font-size:13.5px}
+.adm{font-size:14.5px;margin-top:6px}
+.adchk{display:flex;gap:8px;align-items:center;font-size:14px;margin-top:8px;cursor:pointer}
+.adchk input{width:18px;height:18px;accent-color:var(--ink)}
+.adhint{font-size:13px;color:var(--muted);margin-top:3px}
+.pill{border-radius:999px;padding:2px 10px;font-size:12.5px;font-weight:700;display:inline-block}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}.pill.wait{background:var(--warn-bg);color:var(--warn)}.pill.none{background:var(--bg);color:var(--muted)}
+.mail .ad-b{margin:14px 20px;border:0;padding:0;text-align:center;font-size:11px;color:#8a919c}
 .thumb em{position:absolute;left:4px;bottom:4px;font-style:normal;font-family:var(--body);font-size:9.5px;letter-spacing:0;background:rgba(0,0,0,.55);padding:1px 5px;border-radius:4px;font-weight:600}
 .thumb{height:50px;width:89px}
 .thumb.noimg{background:repeating-linear-gradient(45deg,#eceef2,#eceef2 6px,#f6f7f9 6px,#f6f7f9 12px);color:var(--muted);border:1.5px dashed var(--line)}
@@ -324,19 +337,36 @@ STORIES.push({id:24,src:"conf",video:true,title:"Fireside chat: Financing the ne
   body:"Investors and operators discuss what lenders now expect from northern projects. Permitting clarity moves deals faster. Community agreements are treated as a core risk factor.",img:false,g:"#b5162d,#4a0610"});
 var SAMPLE=[1,2,21,3,4,5,22,6,7,8]; /* 10 stories: 8 featured + 2 conference, 3 without an image */
 function fd(d){return d.toLocaleDateString('en-CA',{month:'short',day:'numeric'})}
-var ADS=[
- {id:"a1",slot:"top",name:"Northforge Drilling — Spring demo days",adv:"Northforge Drilling",size:"600×120",g:"#14181f,#3a3f4b"},
- {id:"a2",slot:"top",name:"GuardLine Safety — Winter PPE sale",adv:"GuardLine Safety",size:"600×120",g:"#c8102e,#7d0a1d"},
- {id:"a3",slot:"top",name:"Boreal Equipment — Parts & service",adv:"Boreal Heavy Equipment",size:"600×120",g:"#b87f00,#6b4c00"},
- {id:"b1",slot:"mid",name:"Voltec Electrical — Automation upgrades",adv:"Voltec Mine Electrical",size:"600×200",g:"#0c63c4,#06274d"},
- {id:"b2",slot:"mid",name:"ClearWater — Closure planning",adv:"ClearWater Environmental",size:"600×200",g:"#14833b,#0b4a22"},
- {id:"c1",slot:"foot",name:"CEN-CAN Expo — Register free",adv:"CEN-CAN Expo",size:"600×100",g:"#c8102e,#5e0714"},
- {id:"c2",slot:"foot",name:"Canadian Mining Expo — Book a booth",adv:"Canadian Mining Expo",size:"600×100",g:"#f2a900,#8a6100"}
-];
-var SLOTS=[["top","Top banner","Above the first story"],["mid","Mid-issue","Between stories"],["foot","Footer","Above the sign-off"]];
+/* Ads come from the Advertising platform: one booking per spot per issue. The 4 spots are fixed:
+   top, after story 3, after story 6 (only in a 9-story issue) and bottom. Banners are 1200x400 for desktop and phone. */
+var SPOTDEF=[["top","Top banner","Above the first story"],["s3","After story 3","Between stories 3 and 4"],["s6","After story 6","Runs only in a 9-story issue"],["bot","Bottom banner","Below the last story"]];
+function bannerImg(name,g,sub){var c=g.split(',');var svg='<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+c[0]+'"/><stop offset="1" stop-color="'+c[1]+'"/></linearGradient></defs><rect width="1200" height="400" fill="url(#g)"/><text x="70" y="190" font-family="Arial" font-weight="700" font-size="82" fill="#fff">'+name.replace(/&/g,'&amp;')+'</text><text x="70" y="270" font-family="Arial" font-size="40" fill="#fff" fill-opacity=".85">'+(sub||'').replace(/&/g,'&amp;')+'</text></svg>';return 'data:image/svg+xml;utf8,'+encodeURIComponent(svg)}
+var BOOK_SEED={15:{
+  top:{by:"Northforge Drilling",camp:"Spring demo days",status:"paid",url:"https://northforge.example/demo",g:"#14181f,#3a3f4b"},
+  s3:{by:"GuardLine Safety",camp:"Winter PPE sale",status:"paid",url:"https://guardline.example/ppe",g:"#c8102e,#7d0a1d"},
+  s6:{by:"Voltec Mine Electrical",camp:"Automation upgrades",status:"invoiced",url:"https://voltec.example/automation",g:"#0c63c4,#06274d"}}};
+/* Bookings made in the Advertising portal are saved to the browser under ctx_bookings; in the live build both pages read the same database. */
+function bookings(issue){
+  var out={},seed=BOOK_SEED[issue]||{},st={};try{st=(JSON.parse(localStorage.getItem('ctx_bookings')||'{}'))[issue]||{}}catch(e){}
+  SPOTDEF.forEach(function(d){var b=st[d[0]]||seed[d[0]];if(b)out[d[0]]={by:b.by,camp:b.camp,status:b.status,url:b.url,img:b.img||bannerImg(b.by,b.g||"#0c63c4,#06274d",b.camp)}});
+  return out;
+}
+function activeFor(n){return SPOTDEF.filter(function(d){return d[0]!=="s6"||n>=9})}
+function activeSpots(){return activeFor(S.sel.length)}
+var HOUSE_IMG=bannerImg("Canadian Trade-Ex","#14181f,#3a3f4b","Find exhibitors at our next expo");
+/* what a spot does in this issue: run (paid, or approved to run), unpaid, house ad, or empty */
+function adInfo(spot){
+  var b=bookings(S.issue)[spot];
+  if(!b)return {state:S.house[spot]?"house":"open"};
+  if(b.status==="paid"||S.adOver[spot])return {state:"run",b:b};
+  return {state:"unpaid",b:b};
+}
+function adsRunning(){return activeSpots().filter(function(d){var i=adInfo(d[0]).state;return i==="run"||i==="house"}).length}
+function unpaidCount(){return activeSpots().filter(function(d){return adInfo(d[0]).state==="unpaid"}).length}
+function adsOk(){return unpaidCount()===0}
 var LISTS=[["mlo","Mining Life Online",4210],["cme","Canadian Mining Expo",6830],["cencan","CEN-CAN Expo",5970],["mag","Magazine",3140],["ctx","Canadian Trade-Ex (CTX)",2260]];
 var STEPS=[["Hopper","Pick 6 to 9"],["Template","Order and edit"],["Advertisers","Fill ad slots"],["Preview","Review and approve"],["Send","Brevo list"]];
-var S={crop:{},imgOk:{},step:0,issue:14,flt:"all",sort:"new",purged:0,fresh:false,sel:[],edits:{},conv:{},busy:{},ads:{top:"a1",mid:"b1",foot:"c2"},approved:false,approver:"",lists:["cme","cencan"],sent:false,subject:"Northern Ontario mining news"};
+var S={crop:{},imgOk:{},step:0,issue:15,adOver:{},house:{},flt:"all",sort:"new",purged:0,fresh:false,sel:[],edits:{},conv:{},busy:{},ads:{top:"a1",mid:"b1",foot:"c2"},approved:false,approver:"",lists:["cme","cencan"],sent:false,subject:"Northern Ontario mining news"};
 var $=function(s){return document.querySelector(s)};
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function story(id){return STORIES.filter(function(x){return x.id===id})[0]}
@@ -357,14 +387,14 @@ function allReady(){return S.sel.length>=MIN&&S.sel.length<=MAX}
 function checks(){return [
   [S.sel.length>=MIN&&S.sel.length<=MAX,S.sel.length+" of "+MIN+"–"+MAX+" stories selected"],
   [imgsLeft()===0,"Story images checked"+(imgsLeft()?" ("+imgsLeft()+" to fix)":"")],
-  [!!(S.ads.top||S.ads.mid||S.ads.foot),"Advertisers added from the ad platform"],
+  [adsOk(),"Ad spots: "+adsRunning()+" of "+activeSpots().length+" filled"+(unpaidCount()?", "+unpaidCount()+" not paid":"")],
   [S.approved,"Preview approved"+(S.approved?" by "+S.approver:"")],
   [S.lists.length>0,"Audience chosen ("+recips().uniq.toLocaleString()+" people)"]
 ]}
 function paintSide(){
   if(typeof tick==='function'&&document.getElementById('tmS'))tick();
-  var r=recips(),ad=0;["top","mid","foot"].forEach(function(k){if(S.ads[k])ad++});
-  $('#sum').innerHTML='<div class="kv"><span>Issue</span><b>No. '+S.issue+'</b></div><div class="kv"><span>In hopper</span><b>'+STORIES.length+'</b></div><div class="kv"><span>Subject</span><b style="text-align:right">'+esc(S.subject)+'</b></div><div class="kv"><span>Stories added</span><b>'+S.sel.length+' <small style="color:var(--muted);font-weight:500">(target '+MIN+'–'+MAX+')</small></b></div><div class="kv"><span>Ad slots filled</span><b>'+ad+' of 3</b></div><div class="kv"><span>Archived until publish</span><b>'+(S.sent?0:Math.max(0,STORIES.length-S.sel.length))+'</b></div><div class="kv"><span>Recipients</span><b>'+r.uniq.toLocaleString()+'</b></div>';
+  var r=recips(),ad=adsRunning();
+  $('#sum').innerHTML='<div class="kv"><span>Issue</span><b>No. '+S.issue+'</b></div><div class="kv"><span>In hopper</span><b>'+STORIES.length+'</b></div><div class="kv"><span>Subject</span><b style="text-align:right">'+esc(S.subject)+'</b></div><div class="kv"><span>Stories added</span><b>'+S.sel.length+' <small style="color:var(--muted);font-weight:500">(target '+MIN+'–'+MAX+')</small></b></div><div class="kv"><span>Ad slots filled</span><b>'+ad+' of '+activeSpots().length+'</b></div><div class="kv"><span>Archived until publish</span><b>'+(S.sent?0:Math.max(0,STORIES.length-S.sel.length))+'</b></div><div class="kv"><span>Recipients</span><b>'+r.uniq.toLocaleString()+'</b></div>';
   $('#chk').innerHTML=checks().map(function(c){return '<li class="'+(c[0]?'ok':'')+'"><i>'+(c[0]?'✓':'')+'</i>'+esc(c[1])+'</li>'}).join('');
   var st=$('#status');st.className='pill '+(S.sent?'sent':S.approved?'appr':'draft');st.textContent=S.sent?'Sent to Brevo':S.approved?'Approved':'Draft';
   $('#stepper').innerHTML=STEPS.map(function(s,i){var d=(i===0&&S.sel.length)||(i===1&&S.sel.length&&allReady())||(i===2&&ad>0)||(i===3&&S.approved)||(i===4&&S.sent);
@@ -448,14 +478,30 @@ function s2(){
     '<div class="acts"><span class="lnk">↗ '+esc(ytId(ed(id,'yt'))?ed(id,'yt'):ed(id,'url'))+'</span><button class="btn sm dark" data-edit="'+id+'">Edit story</button><button class="btn sm ghost" data-rm="'+id+'">Remove (to archive)</button></div></div></div>'}).join('')+nav(true,true,imgsLeft()?'Fix '+imgsLeft()+' image'+(imgsLeft()>1?'s':'')+' first':'Advertisers',!allReady()||imgsLeft()>0);
 }
 /* ---------- step 3 ---------- */
+function chip(st,b){return st==="run"?(b&&b.status==="paid"?'<span class="pill ok">Paid</span>':'<span class="pill ok">Approved to run</span>'):st==="unpaid"?'<span class="pill wait">Awaiting payment</span>':st==="open"?'<span class="pill none">Not sold</span>':'<span class="pill ok">House ad</span>'}
 function s3(){
-  return '<h2>Add advertisers</h2><p class="lead">Ads come from the Advertising platform. Choose one for each slot, or leave a slot empty.</p><div class="acts" style="margin-bottom:10px"><button class="btn sm dark" id="suggAds" type="button">Use suggested ads</button><span style="font-size:13.5px;color:var(--muted)">Picks the campaigns that are paid up and due for this issue.</span></div><div class="note">Showing placeholder campaigns. In the live build only active, paid campaigns for these dates appear.</div>'+
-  SLOTS.map(function(sl){return '<div class="slot"><h4>'+sl[1]+'<small>'+sl[2]+'</small></h4><div class="ads">'+
-    ADS.filter(function(a){return a.slot===sl[0]}).map(function(a){return '<button class="ad" data-ad="'+sl[0]+'|'+a.id+'" aria-pressed="'+(S.ads[sl[0]]===a.id)+'"><div class="pic" style="background:linear-gradient(135deg,'+a.g+')">'+esc(a.adv.split(' ')[0]).toUpperCase()+'</div><b>'+esc(a.name)+'</b><small>'+a.adv+' · '+a.size+'</small></button>'}).join('')+
-    '<button class="ad" data-ad="'+sl[0]+'|" aria-pressed="'+(!S.ads[sl[0]])+'"><div class="pic" style="background:var(--bg);color:var(--muted)">NONE</div><b>Leave empty</b><small>No ad in this slot</small></button></div></div>'}).join('')+nav(true,true,'Preview');
+  var n=S.sel.length,act=activeSpots(),bk=bookings(S.issue),s6b=bk.s6;
+  var html='<h2>Advertisers · Issue '+S.issue+'</h2><p class="lead">Spots come from the Advertising platform. Booked and paid banners go in automatically. This issue has '+n+' stories, so it has '+act.length+' ad spots'+(n>=9?' (the extra spot after story 6 is on).':'. The spot after story 6 only runs when the issue has 9 stories.')+'</p>';
+  SPOTDEF.forEach(function(d){
+    var id=d[0],on=act.some(function(x){return x[0]===id}),b=bk[id],inf=adInfo(id),st=on?inf.state:"off";
+    if(!on){
+      html+='<div class="adc off"><div class="adthumb ph">Not used</div><div class="adb"><b>'+d[1]+'</b><small>'+d[2]+'</small>'+(b?'<div class="warn" style="margin:8px 0 0"><b>'+esc(b.by)+'</b> booked this spot, but it won’t run with '+n+' stories. Add a 9th story, or ask sales and admin to move or credit the booking.</div>':'<div style="color:var(--muted);font-size:14px;margin-top:4px">Not available with '+n+' stories.</div>')+'</div></div>';return}
+    var img=st==="house"?HOUSE_IMG:(b?b.img:null);
+    html+='<div class="adc"><div class="adthumb">'+(img?'<img src="'+img+'" alt="Banner for '+d[1]+'">':'<span>Empty</span>')+'</div><div class="adb"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>'+d[1]+'</b>'+chip(st,b)+'</div><small>'+d[2]+'</small>'+
+      (b?'<div class="adm"><b>'+esc(b.by)+'</b> · '+esc(b.camp)+'<br><span class="lnk">↗ '+esc(b.url)+'</span></div>':'<div class="adm" style="color:var(--muted)">No one has booked this spot for Issue '+S.issue+'.</div>')+
+      (st==="unpaid"?'<label class="adchk"><input type="checkbox" data-over="'+id+'"> Run it anyway (admin approved before payment)</label><div class="adhint">Without approval this banner is left out of the issue.</div>':'')+
+      (st==="run"&&b&&b.status!=="paid"?'<div class="adhint" style="color:var(--ok)">Approved to run before payment.<button class="lnk" data-over="'+id+'" type="button">Undo</button></div>':'')+
+      (!b?'<label class="adchk"><input type="checkbox" data-house="'+id+'" '+(S.house[id]?'checked':'')+'> Fill with a Trade-Ex house ad</label>':'')+
+    '</div></div>';
+  });
+  return html+nav(true,true,'Preview');
 }
-/* ---------- step 4 ---------- */
-function adHtml(k){var a=ADS.filter(function(x){return x.id===S.ads[k]})[0];if(!a)return '';return '<div class="ad-b"><div class="pic" style="background:linear-gradient(135deg,'+a.g+')">'+esc(a.adv.toUpperCase())+'</div>Advertisement · '+esc(a.name)+'</div>'}
+function adHtml(spot,n){
+  if(activeFor(n==null?S.sel.length:n).every(function(d){return d[0]!==spot}))return '';
+  var i=adInfo(spot);if(i.state!=="run"&&i.state!=="house")return '';
+  var img=i.state==="house"?HOUSE_IMG:i.b.img,by=i.state==="house"?"Canadian Trade-Ex":i.b.by;
+  return '<div class="ad-b"><img src="'+img+'" alt="" style="display:block;width:100%;height:auto">Advertisement · '+esc(by)+'</div>';
+}
 function storyHtml(id){
   var s=story(id),sm=ed(id,'sum'),yt=ytId(ed(id,'yt')),vid=s.video||!!yt,href=yt?ed(id,'yt'):'https://'+ed(id,'url');
   return '<div class="st">'+(s.img?'<a href="'+esc(href)+'" class="pic'+(vid?' v':'')+'" style="display:block;aspect-ratio:'+((s.cust&&s.cust!=="default"&&s.ar)?s.ar:16/9)+';background:'+bg(s)+'"></a>':'<div class="pic missing">Image needed</div>')+
@@ -463,13 +509,14 @@ function storyHtml(id){
    '<a href="'+esc(href)+'" class="btnl">'+(vid?'Watch the video':'Read the full story')+' →</a></div>';
 }
 function mailHtml(){
-  var ids=S.sample?SAMPLE:S.sel;
-  var out='<div class="mail"><div class="mh"><b>CANADIAN TRADE-EX</b><small>MINING NEWS</small></div>'+adHtml('top');
+  var ids=S.sample?SAMPLE:S.sel,n=ids.length;
+  var out='<div class="mail"><div class="mh"><b>CANADIAN TRADE-EX</b><small>MINING NEWS</small></div>'+adHtml('top',n);
   ids.forEach(function(id,i){
     out+=storyHtml(id);
-    if(i===Math.floor(ids.length/2)-1||(ids.length===1&&i===0))out+=adHtml('mid');
+    if(i===2)out+=adHtml('s3',n);
+    if(i===5&&n>=9)out+=adHtml('s6',n);
   });
-  return out+adHtml('foot')+'<div class="mf">You are receiving this because you joined a Trade-Ex list.<br>Unsubscribe · Manage preferences · Canadian Trade-Ex</div></div>';
+  return out+adHtml('bot',n)+'<div class="mf">You are receiving this because you joined a Trade-Ex list.<br>Unsubscribe · Manage preferences · Canadian Trade-Ex</div></div>';
 }
 function s4(){
   if(!S.sel.length) return '<h2>Preview</h2><div class="warn">Add stories first.</div>'+nav(true,false);
@@ -504,7 +551,7 @@ document.addEventListener('click',function(e){
   if(d.view){S.view=d.view;render();return}
   if(d.crop){openCrop(+d.crop);return}
   if(t.id==="suggest"){suggest();return}
-  if(t.id==="suggAds"){S.ads={top:"a1",mid:"b1",foot:"c2"};S.approved=false;render();return}
+  if(d.over){S.adOver[d.over]=!S.adOver[d.over];S.approved=false;render();return}
   if(d.i!=null){S.step=+d.i;render();window.scrollTo(0,0);return}
   if(d.go!=null){S.step=+d.go;render();window.scrollTo(0,0);return}
   if(d.flt){S.flt=d.flt;render();return}
@@ -513,13 +560,12 @@ document.addEventListener('click',function(e){
   if(d.mv){var p=d.mv.split('|'),i=+p[0],j=i+ +p[1];var x=S.sel[i];S.sel[i]=S.sel[j];S.sel[j]=x;S.approved=false;render();return}
   if(d.rm){S.sel.splice(S.sel.indexOf(+d.rm),1);S.approved=false;render();return}
   if(d.fmt){var p=d.fmt.split('|');S.edits[p[0]]=S.edits[p[0]]||{};S.edits[p[0]].fmt=p[1];S.approved=false;render();return}
-  if(d.ad){var p=d.ad.split('|');S.ads[p[0]]=p[1]||null;S.approved=false;render();return}
   if(t.id==="approve"){S.approver=$('#appr').value.trim();if(!S.approver){$('#appr').focus();$('#appr').style.borderColor='var(--err)';return}S.approved=true;render();return}
   if(t.id==="useSample"){S.sample=true;render();return}
   if(t.id==="useReal"){S.sample=false;render();return}
   if(t.id==="testmail"){$('#tmsg').textContent="Demo: a test would be sent to you. Nothing was sent.";return}
   if(t.id==="sendNow"){S.purged=STORIES.length-S.sel.length;S.sent=true;render();return}
-  if(t.id==="nextIssue"){T.t0=Date.now();S.crop={};S.imgOk={};S.issue++;S.sel=[];S.edits={};S.approved=false;S.approver="";S.sent=false;S.purged=0;S.fresh=true;S.flt="all";S.step=0;
+  if(t.id==="nextIssue"){T.t0=Date.now();S.crop={};S.imgOk={};S.issue++;S.adOver={};S.house={};S.sel=[];S.edits={};S.approved=false;S.approver="";S.sent=false;S.purged=0;S.fresh=true;S.flt="all";S.step=0;
     STORIES=NEW_TITLES.map(function(t,i){return mk(t,i,22,200)});render();window.scrollTo(0,0);return}
 });
 document.addEventListener('input',function(e){
@@ -529,6 +575,8 @@ document.addEventListener('input',function(e){
 });
 document.addEventListener('change',function(e){
   var t=e.target;
+  if(t.dataset&&t.dataset.over){S.adOver[t.dataset.over]=t.checked;S.approved=false;render();return}
+  if(t.dataset&&t.dataset.house){S.house[t.dataset.house]=t.checked;S.approved=false;render();return}
   if(t.id==="apc"&&!t.checked){S.approved=false;render()}
   if(t.id==="so"){S.sort=t.value;render()}
   if(t.dataset.list){var i=S.lists.indexOf(t.dataset.list);if(t.checked&&i<0)S.lists.push(t.dataset.list);if(!t.checked&&i>-1)S.lists.splice(i,1);render()}

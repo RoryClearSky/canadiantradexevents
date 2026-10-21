@@ -310,7 +310,8 @@ $('#form').addEventListener('submit',function(e){
   if(!imgOk)err.push('a banner image that passes the size check');if(!urlOk(url))err.push('a link that starts with https://');if(!(price>0))err.push('the price');
   if(err.length){$('#formE').textContent='Still needed: '+err.join(', ')+'.';return}
   $('#formE').textContent='';
-  s.state="mine";s.by=adv;BOOKINGS.push({issue:ISSUE,spot:s.name,adv:adv,amt:price,status:"Invoice sent to admin"});
+  s.state="mine";s.by=adv;try{var all=JSON.parse(localStorage.getItem('ctx_bookings')||'{}');all[ISSUE]=all[ISSUE]||{};all[ISSUE][s.id]={by:adv,camp:cam,status:'invoiced',url:url,img:img};localStorage.setItem('ctx_bookings',JSON.stringify(all))}catch(e){}
+  BOOKINGS.push({issue:ISSUE,spot:s.name,adv:adv,amt:price,status:"Invoice sent to admin"});
   var inv='INV-'+ISSUE+'-'+s.id.toUpperCase();
   $('#dP').textContent=s.name+' in Issue '+ISSUE+' ('+fdate(curIssue().date)+') is held for '+adv+' until the admin confirms payment.';
   $('#dMail').innerHTML='<div class="row"><b>To</b><span>Admin (invoicing)</span></div><div class="row"><b>From</b><span>Jordan P., Sales agent</span></div><div class="row"><b>Subject</b><span>Invoice request '+inv+': '+esc(adv)+', '+s.name+', Issue '+ISSUE+'</span></div><hr style="border:0;border-top:1px solid var(--line)">'+
