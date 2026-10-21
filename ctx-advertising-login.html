@@ -76,12 +76,12 @@ button,input{font:inherit}
     <!-- STEP 1 -->
     <form class="step show" id="s1" novalidate>
       <div><h2>Sales agent sign in</h2><p class="sub">Use the work email Trade-Ex set up for you.</p></div>
-      <div class="fld"><label for="email">Work email</label><div class="inp" id="eW"><input id="email" type="email" inputmode="email" autocomplete="username" placeholder="you@canadiantradex.com"></div><div class="msg" id="eM" role="alert"></div></div>
-      <div class="fld"><label for="pw">Password</label><div class="inp" id="pW"><input id="pw" type="password" autocomplete="current-password" placeholder="Your password"><button type="button" class="eye" id="eye" aria-label="Show password">Show</button></div><div class="msg" id="pM" role="alert"></div></div>
+      <div class="fld"><label for="email">Work email</label><div class="inp" id="eW"><input id="email" type="email" inputmode="email" autocomplete="off" placeholder="you@canadiantradex.com"></div><div class="msg" id="eM" role="alert"></div></div>
+      <div class="fld"><label for="pw">Password</label><div class="inp" id="pW"><input id="pw" type="password" autocomplete="off" placeholder="Your password"><button type="button" class="eye" id="eye" aria-label="Show password">Show</button></div><div class="msg" id="pM" role="alert"></div></div>
       <div class="row"><label><input type="checkbox" id="rem"> Keep me signed in on this device</label><button type="button" class="lnk" id="forgot">Forgot password?</button></div>
       <button class="go" id="go" type="submit"><span id="goT">Sign in</span></button>
       <div class="invite">Access is by invitation. To get an account or change your role, ask the Trade-Ex admin.</div>
-      <div class="demo">Demo account: <b>jordan@canadiantradex.example</b> and password <b>TradeEx2026!</b>. The live site checks credentials on the server.</div>
+      <div class="demo">Demo account: <b>jordan@canadiantradex.example</b> and password <b>TradeEx2026!</b>. The live site checks credentials on the server.<br><button type="button" class="lnk" id="fill" style="padding:6px 0 0">Fill in the demo login for me</button></div>
     </form>
 
     <!-- STEP 2: code -->
@@ -114,6 +114,8 @@ var tries=0,code="",lockedUntil=0,pending=null;
 function show(n){['s1','s2','s3'].forEach(function(id,i){$('#'+id).classList.toggle('show',i===n-1)});}
 function clr(){['eM','pM','oM','rM'].forEach(function(i){$('#'+i).textContent=''});['eW','pW','rW'].forEach(function(i){$('#'+i).classList.remove('bad')})}
 var emailRe=/^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+$('#fill').onclick=function(){$('#email').value=DEMO.email;$('#pw').value=DEMO.pw;clr();$('#go').focus()};
+['email','pw','rEmail'].forEach(function(id){$('#'+id).addEventListener('input',clr)});
 $('#eye').onclick=function(){var p=$('#pw'),s=p.type==='password';p.type=s?'text':'password';this.textContent=s?'Hide':'Show';this.setAttribute('aria-label',s?'Hide password':'Show password')};
 function busy(on,t){var g=$('#go');g.disabled=on;$('#goT').textContent=on?t:'Sign in';var sp=g.querySelector('.spin');if(on&&!sp)g.insertAdjacentHTML('afterbegin','<span class="spin"></span>');if(!on&&sp)sp.remove()}
 $('#s1').addEventListener('submit',function(e){
