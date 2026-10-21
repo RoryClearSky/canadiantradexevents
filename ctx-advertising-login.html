@@ -81,7 +81,7 @@ button,input{font:inherit}
       <div class="row"><label><input type="checkbox" id="rem"> Keep me signed in on this device</label><button type="button" class="lnk" id="forgot">Forgot password?</button></div>
       <button class="go" id="go" type="submit"><span id="goT">Sign in</span></button>
       <div class="invite">Access is by invitation. To get an account or change your role, ask the Trade-Ex admin.</div>
-      <div class="demo">Demo account: <b>jordan@canadiantradex.example</b> and password <b>TradeEx2026!</b>. The live site checks credentials on the server.<br><button type="button" class="lnk" id="fill" style="padding:6px 0 0">Fill in the demo login for me</button></div>
+      <div class="demo">Demo account: <b>jordan@canadiantradex.example</b> and password <b>123456</b>. The live site checks credentials on the server.<br><button type="button" class="lnk" id="fill" style="padding:6px 0 0">Fill in the demo login for me</button></div>
     </form>
 
     <!-- STEP 2: code -->
@@ -108,7 +108,7 @@ button,input{font:inherit}
 <script>
 /* Demo auth. Live build: staff accounts are created by the admin, passwords are hashed, the 5-digit code is emailed and checked
    on the server, sessions are server-side, and repeated failures lock the account for a few minutes. */
-var DEMO={email:"jordan@canadiantradex.example",pw:"TradeEx2026!",name:"Jordan P."};
+var DEMO={email:"jordan@canadiantradex.example",pw:"123456",name:"Jordan P."};
 var $=function(s){return document.querySelector(s)};
 var tries=0,code="",lockedUntil=0,pending=null;
 function show(n){['s1','s2','s3'].forEach(function(id,i){$('#'+id).classList.toggle('show',i===n-1)});}
